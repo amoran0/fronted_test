@@ -1,0 +1,63 @@
+<app-cabecera-pagina titulo="Carta">
+  <a class="boton boton--primario" [routerLink]="autenticacion.rol() === 'cliente' ? '/pedido' : '/acceder'">
+    <app-icono nombre="bolsa-compra" />
+    Ver mi pedido · {{ servicioCarrito.unidades() }}
+  </a>
+</app-cabecera-pagina>
+
+<section class="controles" aria-label="Filtros de la carta">
+  <div class="controles__fila">
+    <div class="campo expandir">
+      <span class="t-etiqueta">Buscar en la carta</span>
+      <app-campo-busqueda [(valor)]="textoBusqueda" textoIndicativo="Buscar" />
+    </div>
+    <app-grupo-filtros [opciones]="opcionesTipoProducto" [(valor)]="tipoProducto" etiqueta="Tipo de producto" />
+  </div>
+
+  <div class="controles__fila">
+    <label class="campo controles__precio">
+      <span class="t-etiqueta">Precio máx.</span>
+      <select class="selector" (change)="precioMaximo.set(+$any($event.target).value)">
+        @for (precio of opcionesPrecioMaximo; track precio) {
+          <option [value]="precio" [selected]="precio === precioMaximo()">Hasta {{ precio }},00 €</option>
+        }
+      </select>
+    </label>
+    <div class="campo">
+      <span class="t-etiqueta">Disponibilidad</span>
+      <app-grupo-filtros [opciones]="opcionesDisponibilidad" [(valor)]="estadoDisponibilidad" etiqueta="Disponibilidad" />
+    </div>
+    <label class="campo expandir">
+      <span class="t-etiqueta">Excluir alérgeno</span>
+      <select class="selector" [class.sin-seleccion]="!alergenoExcluido()" (change)="alergenoExcluido.set($any($event.target).value)">
+        <option value="">Ej.: Gluten, Leche, Sésamo…</option>
+        @for (alergeno of alergenos; track alergeno) {
+          <option [value]="alergeno" [selected]="alergeno === alergenoExcluido()">{{ alergeno }}</option>
+        }
+      </select>
+    </label>
+  </div>
+</section>
+
+<div class="resumen">
+  <strong>{{ productosFiltrados().length }} productos</strong>
+  <span class="t-pequeno atenuado">Disponibilidad actualizada ahora</span>
+</div>
+
+@if (servicioProductos.cargando()) {
+  <p class="atenuado">Cargando la carta…</p>
+} @else if (productosFiltrados().length) {
+  <ul class="rejilla">
+    @for (producto of productosFiltrados(); track producto.id) {
+      <li>
+        <app-tarjeta-producto [producto]="producto" [nombreCategoria]="servicioProductos.nombreCategoria(producto.categoriaId)" />
+      </li>
+    }
+  </ul>
+  <p class="final t-pequeno atenuado">Has visto toda la carta · {{ productosFiltrados().length }} productos</p>
+} @else {
+  <div class="vacio tarjeta">
+    <strong class="t-titulo-3">No hay productos con estos filtros</strong>
+    <button type="button" class="boton boton--secundario" (click)="quitarFiltros()">Quitar filtros</button>
+  </div>
+}

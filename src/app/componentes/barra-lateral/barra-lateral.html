@@ -1,0 +1,51 @@
+<nav class="barra-lateral" aria-label="Navegación principal">
+  <a class="marca" routerLink="/carta" aria-label="The Coffee Room, ir a la carta">
+    <span class="marca__linea">THE <img class="marca__simbolo" src="logo-cup.svg" alt="" width="34" height="34" /></span>
+    <span class="marca__linea">COFFEE</span>
+    <span class="marca__linea">ROOM</span>
+  </a>
+
+  <div class="rol">
+    <app-icono [nombre]="configuracionRol().icono" [tamano]="16" [grosor]="1.5" />
+    <div class="rol__texto">
+      <span>{{ autenticacion.usuario()?.nombre ?? configuracionRol().etiqueta }}</span>
+      @if (autenticacion.usuario()) {
+        <span class="rol__detalle">{{ configuracionRol().etiqueta }}</span>
+      }
+    </div>
+  </div>
+
+  @if (autenticacion.rol() === 'barista') {
+    <div class="turno">
+      <span class="t-etiqueta">Número de turno diario</span>
+      <div class="turno__caja" title="Pedidos de hoy + 1">{{ siguienteTurno() }} · siguiente</div>
+    </div>
+  }
+
+  <ul class="menu">
+    @for (opcionMenu of configuracionRol().menu; track opcionMenu.ruta) {
+      <li>
+        <a class="menu__elemento" [routerLink]="opcionMenu.ruta" routerLinkActive="esta-activo" ariaCurrentWhenActive="page">
+          <span class="menu__punto"></span>{{ opcionMenu.texto }}
+        </a>
+      </li>
+    }
+  </ul>
+
+  <div class="local">
+    <span class="t-etiqueta local__etiqueta">Local</span>
+    <strong>{{ negocio.local }}</strong>
+    <span class="local__estado" [class.esta-cerrado]="!localAbierto">
+      <span class="local__punto"></span>
+      {{ localAbierto ? 'Abierto · hasta ' + negocio.apertura.hasta : 'Cerrado · abre a las ' + negocio.apertura.desde }}
+    </span>
+  </div>
+
+  @if (autenticacion.usuario()) {
+    <div class="sesion">
+      <button type="button" class="sesion__salir" (click)="autenticacion.cerrarSesion()">
+        <app-icono nombre="cerrar-sesion" [tamano]="14" /> Cerrar sesión
+      </button>
+    </div>
+  }
+</nav>

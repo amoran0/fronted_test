@@ -1,0 +1,66 @@
+.detalle {
+  display: grid;
+  grid-template-columns: minmax(0, 440fr) minmax(0, 500fr);
+  gap: 28px;
+  align-items: stretch;
+}
+.detalle__foto {
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 560px;
+  background: var(--color-arena);
+}
+.detalle__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.detalle__sin-imagen {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: var(--color-arena);
+}
+.detalle__informacion {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 28px;
+  align-items: flex-start;
+}
+.detalle__informacion > app-aviso,
+.detalle__informacion > .separador {
+  align-self: stretch;
+}
+.detalle__precio {
+  color: var(--color-primario);
+  margin-top: -6px;
+}
+.detalle__descripcion {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--color-texto-atenuado);
+}
+.datos-clave {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 0;
+  width: 100%;
+}
+.datos-clave dd {
+  margin: 6px 0 0;
+  font-weight: 700;
+}
+.datos-clave .esta-agotado {
+  color: var(--color-peligro);
+}
+@media (max-width: 1000px) {
+  .detalle {
+    grid-template-columns: 1fr;
+  }
+  .detalle__foto {
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+  }
+}

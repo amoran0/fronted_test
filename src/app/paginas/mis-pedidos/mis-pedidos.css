@@ -1,0 +1,51 @@
+.pedido-activo {
+  margin-bottom: 14px;
+}
+.pedido-activo .tarjeta__cabecera {
+  align-items: flex-start;
+  margin-bottom: 0;
+}
+.pedido-activo .boton {
+  align-self: flex-start;
+}
+.progreso {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.progreso li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.progreso__barra {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-arena);
+}
+.progreso .esta-completado .progreso__barra {
+  background: var(--color-primario);
+}
+.progreso .es-actual .t-etiqueta {
+  color: var(--color-primario);
+}
+.totales {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.historial {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+}
+.historial li {
+  gap: 10px;
+}

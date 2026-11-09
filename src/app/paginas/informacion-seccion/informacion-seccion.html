@@ -1,0 +1,57 @@
+<app-cabecera-pagina [titulo]="tituloSeccion()" [subtitulo]="subtituloSeccion()" />
+
+@switch (seccion()) {
+  @case ('como-funciona') {
+    <div class="pasos">
+      <div class="tarjeta paso">
+        <span class="paso__numero">1</span>
+        <strong class="t-titulo">Elige en la carta</strong>
+        <p class="atenuado">Filtra por tipo, precio o alérgenos y consulta la disponibilidad en tiempo real.</p>
+      </div>
+      <div class="tarjeta paso">
+        <span class="paso__numero">2</span>
+        <strong class="t-titulo">Confirma tu pedido</strong>
+        <p class="atenuado">Aplica tu cupón o tu descuento de socio FitZone: siempre se usa la ventaja mayor.</p>
+      </div>
+      <div class="tarjeta paso">
+        <span class="paso__numero">3</span>
+        <strong class="t-titulo">Recoge con tu turno</strong>
+        <p class="atenuado">Sigue el estado del pedido y acércate a la barra cuando esté listo.</p>
+      </div>
+    </div>
+    @if (!autenticacion.autenticado()) {
+      <a class="boton boton--primario" routerLink="/acceder">Acceder para pedir</a>
+    }
+  }
+  @case ('perfil') {
+    @if (autenticacion.usuario(); as usuario) {
+      <div class="tarjeta tarjeta--amplia">
+        <dl>
+          <dt class="t-etiqueta">Nombre</dt><dd>{{ usuario.nombre }}</dd>
+          <dt class="t-etiqueta">Email</dt><dd>{{ usuario.email }}</dd>
+          <dt class="t-etiqueta">Socio FitZone</dt><dd>{{ usuario.dniSocio ? 'Sí · DNI ' + usuario.dniSocio : 'No' }}</dd>
+        </dl>
+      </div>
+    }
+  }
+  @case ('turno') {
+    <div class="indicadores">
+      <app-tarjeta-indicador etiqueta="Pendientes" [valor]="servicioPedidos.cantidadPorEstado().pendiente" />
+      <app-tarjeta-indicador etiqueta="En preparación" [valor]="servicioPedidos.cantidadPorEstado().en_preparacion" />
+      <app-tarjeta-indicador etiqueta="Listos" [valor]="servicioPedidos.cantidadPorEstado().listo" />
+    </div>
+    <app-aviso tono="informacion" titulo="Turno de tarde · 14:00 – 20:30">Recuerda revisar la disponibilidad antes del cierre.</app-aviso>
+  }
+  @case ('resumen') {
+    <div class="indicadores">
+      <app-tarjeta-indicador etiqueta="Pedidos en curso" [valor]="servicioPedidos.cola().length" />
+      <app-tarjeta-indicador etiqueta="Productos en carta" [valor]="servicioProductos.carta().length" />
+      <app-tarjeta-indicador etiqueta="Agotados ahora" [valor]="productosAgotados()" [tonoPista]="productosAgotados() ? 'alerta' : 'correcto'" [pista]="productosAgotados() ? 'Revisa la disponibilidad' : 'Todo disponible'" />
+    </div>
+    <div class="fila">
+      <a class="boton boton--secundario" routerLink="/admin/carta">Gestión de carta</a>
+      <a class="boton boton--secundario" routerLink="/admin/cupones">Cupones</a>
+      <a class="boton boton--secundario" routerLink="/admin/informes">Informes</a>
+    </div>
+  }
+}

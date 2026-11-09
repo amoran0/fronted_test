@@ -1,0 +1,77 @@
+<app-cabecera-pagina titulo="Disponibilidad de carta" subtitulo="Abre o repón productos sin modificar la carta administrativa.">
+  <button type="button" class="boton boton--primario" (click)="registrarReposicion()"><app-icono nombre="paquete" /> Registrar reposición</button>
+</app-cabecera-pagina>
+
+<div class="filtros">
+  <div class="campo">
+    <span class="t-etiqueta">Buscar producto</span>
+    <app-campo-busqueda [(valor)]="textoBusqueda" textoIndicativo="Buscar por nombre…" />
+  </div>
+  <label class="campo">
+    <span class="t-etiqueta">Categoría</span>
+    <select class="selector" [value]="categoriaSeleccionada()" (change)="categoriaSeleccionada.set($any($event.target).value); cambioMasivoPorConfirmar.set(null)">
+      <option value="">Todas</option>
+      @for (categoria of servicioProductos.categorias(); track categoria.id) {
+        <option [value]="categoria.id">{{ categoria.nombre }}</option>
+      }
+    </select>
+  </label>
+</div>
+
+@if (categoriaSeleccionada()) {
+  <div class="accion-masiva">
+    <div>
+      <strong class="t-etiqueta accion-masiva__titulo">{{ servicioProductos.nombreCategoria(categoriaSeleccionada()) }} · {{ productosEditables().length }} productos</strong>
+      <p class="t-pequeno">{{ cambioMasivoPorConfirmar() ? 'Pulsa de nuevo para confirmar el cambio masivo.' : 'Confirma el alcance antes de aplicar.' }}</p>
+    </div>
+    <div class="fila">
+      <button type="button" class="boton boton--primario" (click)="cambiarEstadoMasivo('disponible')">
+        <app-icono nombre="circulo-confirmacion" /> {{ cambioMasivoPorConfirmar() === 'disponible' ? 'Confirmar: disponibles' : 'Marcar disponibles' }}
+      </button>
+      <button type="button" class="boton boton--primario" (click)="cambiarEstadoMasivo('agotado')">
+        <app-icono nombre="circulo-confirmacion" /> {{ cambioMasivoPorConfirmar() === 'agotado' ? 'Confirmar: agotados' : 'Marcar agotados' }}
+      </button>
+    </div>
+  </div>
+}
+
+<section class="tarjeta tarjeta--amplia">
+  <div class="tarjeta__cabecera">
+    <h2 class="t-titulo-3">Productos hoy</h2>
+    <div class="fila recuentos">
+      <span class="insignia insignia--exito">{{ recuentos().disponibles }} disponibles</span>
+      <span class="insignia insignia--peligro">{{ recuentos().agotados }} agotados</span>
+      <span class="insignia insignia--acento">{{ recuentos().visibles }} visibles</span>
+    </div>
+  </div>
+
+  <ul class="lista">
+    @for (producto of productosFiltrados(); track producto.id) {
+      <li class="elemento">
+        <div class="expandir">
+          <strong>{{ producto.nombre }}</strong>
+          <p class="t-pequeno atenuado">{{ servicioProductos.nombreCategoria(producto.categoriaId) }}</p>
+        </div>
+        <span class="t-pequeno atenuado elemento__nota">{{ producto.nota }}</span>
+        <app-etiqueta-estado [estado]="producto.estado" [tono]="producto.estado === 'retirado' ? 'neutro' : undefined" />
+        @switch (producto.estado) {
+          @case ('disponible') {
+            <button type="button" class="boton boton--secundario elemento__boton" (click)="cambiarEstado(producto, 'agotado')">Marcar agotado</button>
+          }
+          @case ('agotado') {
+            <button type="button" class="boton boton--secundario elemento__boton" (click)="cambiarEstado(producto, 'disponible')">Reponer</button>
+          }
+          @default {
+            <button type="button" class="boton elemento__boton" disabled title="Solo un administrador puede volver a activarlo">Solo Admin</button>
+          }
+        }
+      </li>
+    } @empty {
+      <li class="atenuado">No hay productos que coincidan.</li>
+    }
+  </ul>
+</section>
+
+@if (mensaje(); as textoMensaje) {
+  <app-aviso tono="exito" class="mensaje">{{ textoMensaje }}</app-aviso>
+}

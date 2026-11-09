@@ -1,0 +1,58 @@
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.distribucion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 18px;
+  align-items: start;
+}
+.cabecera-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.cupones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cupon {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 0 26px;
+}
+.cupon__datos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 200px;
+}
+.cupon__fechas {
+  display: flex;
+  gap: 16px;
+}
+.cupon__fechas :first-child {
+  width: 94px;
+}
+.nuevo {
+  gap: 10px;
+  scroll-margin-top: 20px;
+}
+.nuevo .boton {
+  align-self: flex-start;
+}
+.columnas-3 {
+  grid-template-columns: 1fr 70px 1fr;
+}
+@media (max-width: 1100px) {
+  .distribucion {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,90 @@
+<app-cabecera-pagina titulo="Cupones" subtitulo="Solicitudes de colaboradores y comprobación de códigos.">
+  <a class="boton boton--secundario" routerLink="/admin/cupones"><app-icono nombre="flecha-izquierda" /> Volver a cupones</a>
+</app-cabecera-pagina>
+
+<div class="distribucion">
+  <form class="tarjeta tarjeta--amplia pila" [formGroup]="formularioSolicitud" (ngSubmit)="generarCupon()" novalidate>
+    <div>
+      <h2 class="t-titulo-3">CineTown · generar a petición</h2>
+      <p class="t-pequeno atenuado">La generación se inicia únicamente tras recibir una solicitud de CineTown.</p>
+    </div>
+    <label class="campo">
+      <span class="t-etiqueta">Solicitud de CineTown</span>
+      <input class="entrada" formControlName="referencia" />
+    </label>
+    <div class="rejilla-formulario columnas-2">
+      <label class="campo">
+        <span class="t-etiqueta">Código solicitado</span>
+        <input class="entrada" formControlName="codigo" [class.es-invalido]="formularioSolicitud.controls.codigo.touched && formularioSolicitud.controls.codigo.invalid" />
+      </label>
+      <label class="campo">
+        <span class="t-etiqueta">Descuento fijo (€)</span>
+        <input class="entrada" type="number" min="1" step="0.5" formControlName="descuentoFijo" />
+      </label>
+      <label class="campo">
+        <span class="t-etiqueta">Desde</span>
+        <input class="entrada" type="date" formControlName="desde" />
+      </label>
+      <label class="campo">
+        <span class="t-etiqueta">Hasta</span>
+        <input class="entrada" type="date" formControlName="hasta" />
+      </label>
+      <label class="campo">
+        <span class="t-etiqueta">Usos máximos</span>
+        <input class="entrada" type="number" min="1" formControlName="usosMax" />
+      </label>
+      <label class="campo">
+        <span class="t-etiqueta">Compra mínima (€)</span>
+        <input class="entrada" type="number" min="0" step="0.5" formControlName="minimoCompra" />
+      </label>
+    </div>
+    <label class="campo">
+      <span class="t-etiqueta">Email destinatario</span>
+      <input class="entrada" type="email" formControlName="email" [class.es-invalido]="formularioSolicitud.controls.email.touched && formularioSolicitud.controls.email.invalid" />
+    </label>
+    <button type="submit" class="boton boton--primario"><app-icono nombre="circulo-confirmacion" /> Generar para solicitud</button>
+
+    @if (errorGeneracion(); as mensajeError) {
+      <app-aviso tono="peligro" titulo="No se ha generado">{{ mensajeError }}</app-aviso>
+    }
+    @if (resumenCuponGenerado(); as resumenCupon) {
+      <app-aviso tono="informacion" [titulo]="formularioSolicitud.controls.codigo.value.toUpperCase() + ' · resultado de la solicitud'">{{ resumenCupon }}</app-aviso>
+    }
+  </form>
+
+  <form class="tarjeta tarjeta--amplia pila" [formGroup]="formularioComprobacion" (ngSubmit)="comprobarCupon()" novalidate>
+    <h2 class="t-titulo-3">Comprobador</h2>
+    <label class="campo">
+      <span class="t-etiqueta">Código</span>
+      <input class="entrada" formControlName="codigo" autocomplete="off" />
+    </label>
+    <label class="campo">
+      <span class="t-etiqueta">Importe (€)</span>
+      <input class="entrada" type="number" min="0" step="0.01" formControlName="importe" />
+    </label>
+    <label class="campo">
+      <span class="t-etiqueta">Fecha</span>
+      <input class="entrada" type="date" formControlName="fecha" />
+    </label>
+    <label class="campo">
+      <span class="t-etiqueta">Email</span>
+      <input class="entrada" type="email" formControlName="email" />
+    </label>
+    <button type="submit" class="boton boton--primario"><app-icono nombre="circulo-confirmacion" /> Comprobar</button>
+
+    @if (resultadoComprobacion(); as resultado) {
+      @if (resultado.valido) {
+        <app-aviso tono="exito" titulo="Descuento aplicado">
+          Existe · activo · fecha válida · usos disponibles · mínimo alcanzado · email coincide.
+        </app-aviso>
+      } @else {
+        <app-aviso tono="peligro" titulo="Cupón no válido">{{ resultado.motivo }}</app-aviso>
+      }
+      <div class="resultado">
+        <span class="t-etiqueta">Resultado</span>
+        <strong>Descuento: {{ formatearEuros(resultado.descuento ?? 0) }}</strong>
+        <strong>Total: {{ formatearEuros(resultado.total) }}</strong>
+      </div>
+    }
+  </form>
+</div>

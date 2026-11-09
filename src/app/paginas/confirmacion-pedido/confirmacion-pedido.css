@@ -1,0 +1,24 @@
+.distribucion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+.tarjeta__cabecera {
+  align-items: flex-start;
+  margin-bottom: 0;
+}
+.resumen .boton {
+  align-self: flex-start;
+}
+.descuento {
+  color: var(--color-exito);
+}
+.total {
+  align-items: baseline;
+}
+@media (max-width: 1100px) {
+  .distribucion {
+    grid-template-columns: 1fr;
+  }
+}
