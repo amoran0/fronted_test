@@ -1,0 +1,51 @@
+.active {
+  margin-bottom: 14px;
+}
+.active .card__head {
+  align-items: flex-start;
+  margin-bottom: 0;
+}
+.active .btn {
+  align-self: flex-start;
+}
+.progress {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+.progress__bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--c-sand);
+}
+.progress .is-done .progress__bar {
+  background: var(--c-primary);
+}
+.progress .is-current .t-label {
+  color: var(--c-primary);
+}
+.totals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+  li {
+    gap: 10px;
+  }
+}

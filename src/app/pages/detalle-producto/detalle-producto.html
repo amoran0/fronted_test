@@ -1,0 +1,67 @@
+<app-page-header title="Detalle del producto" subtitle="Toda la información para elegir con tranquilidad.">
+  <a class="btn btn--secondary" routerLink="/carta"><app-icon name="arrow-left" /> Volver a la carta</a>
+</app-page-header>
+
+@if (producto(); as p) {
+  <div class="detail">
+    <div class="detail__photo">
+      @if (p.imagen && !sinImagen()) {
+        <img [src]="p.imagen" [alt]="p.nombre" (error)="sinImagen.set(true)" />
+      } @else {
+        <div class="detail__placeholder"><app-icon name="coffee" [size]="56" [stroke]="1.2" /></div>
+      }
+    </div>
+
+    <article class="card detail__info">
+      <div class="row">
+        <app-status-badge tono="neutral" [texto]="productos.nombreCategoria(p.categoriaId)" />
+        <app-status-badge [estado]="p.estado" />
+      </div>
+      <h2 class="t-display">{{ p.nombre }}</h2>
+      <p class="t-h2 detail__price">{{ p.precio | euro }}</p>
+      <p class="detail__desc">{{ p.descripcion }}</p>
+      <hr class="divider" />
+
+      <dl class="facts">
+        <div>
+          <dt class="t-label">Categoría</dt>
+          <dd>{{ productos.nombreCategoria(p.categoriaId) }}</dd>
+        </div>
+        <div>
+          <dt class="t-label">Disponibilidad</dt>
+          <dd [class.is-out]="p.estado !== 'disponible'">{{ p.estado === 'disponible' ? 'Disponible hoy' : 'Agotado hoy' }}</dd>
+        </div>
+      </dl>
+
+      <div class="field">
+        <span class="t-label">Alérgenos</span>
+        <div class="row">
+          @for (a of p.alergenos; track a) {
+            <span class="badge badge--warning">{{ a }}</span>
+          } @empty {
+            <span class="t-small muted">Sin alérgenos declarados</span>
+          }
+        </div>
+      </div>
+
+      @if (p.estado !== 'disponible') {
+        <app-alert tone="danger" title="Temporalmente agotado">
+          No puede añadirse al pedido. Pregunta al equipo o vuelve a consultar más tarde.
+        </app-alert>
+        <button type="button" class="btn" disabled><app-icon name="shopping-bag" /> No disponible</button>
+      } @else {
+        <button type="button" class="btn btn--primary" (click)="anadir()">
+          <app-icon name="shopping-bag" />
+          {{ auth.rol() === 'cliente' ? 'Añadir al pedido' : 'Accede para pedir' }}
+        </button>
+        @if (mensaje(); as m) {
+          <app-alert tone="success">{{ m }} <a routerLink="/pedido">Ver mi pedido</a></app-alert>
+        }
+      }
+    </article>
+  </div>
+} @else {
+  <app-alert tone="warning" title="Producto no encontrado">
+    Puede que se haya retirado de la carta. <a routerLink="/carta">Volver a la carta</a>
+  </app-alert>
+}

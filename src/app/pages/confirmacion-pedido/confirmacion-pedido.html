@@ -1,0 +1,112 @@
+<app-page-header title="Descuento y confirmación" subtitle="Aplica la ventaja más alta disponible y confirma tu pedido.">
+  <app-status-badge tono="info" texto="Paso 2 de 2" />
+</app-page-header>
+
+@if (!carrito.puedeContinuar()) {
+  <app-alert tone="warning" title="Revisa tu pedido">
+    Tu pedido está vacío o tiene productos agotados. <a routerLink="/pedido">Volver al paso 1</a>
+  </app-alert>
+} @else {
+  <div class="layout">
+    <div class="stack">
+      <!-- Cupón -->
+      <section class="card card--roomy stack">
+        <div class="card__head">
+          <div>
+            <h2 class="t-h3">Cupón</h2>
+            <p class="t-small muted">Código válido, activo, vigente y con usos disponibles.</p>
+          </div>
+          <app-status-badge [tono]="cuponAplicado() ? 'success' : 'danger'" [texto]="cuponAplicado() ? 'Aplicado' : 'No aplicado'" />
+        </div>
+        <form class="field" (submit)="$event.preventDefault(); aplicarCupon()">
+          <label class="t-label" for="cupon">Código de cupón</label>
+          <div class="row">
+            <div class="input-icon grow">
+              <app-icon name="ticket" [size]="15" />
+              <input id="cupon" class="input" [class.is-invalid]="errorCupon()" [value]="codigo()"
+                (input)="codigo.set($any($event.target).value)" placeholder="Ej.: CAFE10" autocomplete="off" />
+            </div>
+            @if (cuponAplicado()) {
+              <button type="button" class="btn btn--ghost" (click)="quitarCupon()">Quitar</button>
+            } @else {
+              <button type="submit" class="btn btn--ghost">Aplicar</button>
+            }
+          </div>
+        </form>
+        @if (errorCupon(); as e) {
+          <app-alert tone="danger" title="No se puede aplicar el cupón">{{ e }}</app-alert>
+        }
+        <p class="t-small muted">Comprueba también el mínimo de compra y el email si el cupón es personal.</p>
+      </section>
+
+      <!-- Socio FitZone -->
+      <section class="card card--roomy stack">
+        <div class="card__head">
+          <div>
+            <h2 class="t-h3">Socio FitZone</h2>
+            <p class="t-small muted">Los socios del gimnasio FitZone tienen un 10 % de descuento.</p>
+          </div>
+          @if (carrito.dniSocio()) {
+            <app-status-badge tono="success" texto="Activo · validado" />
+          }
+        </div>
+        <form class="field" (submit)="$event.preventDefault(); validarSocio()">
+          <label class="t-label" for="dni">DNI de socio</label>
+          <div class="row">
+            <div class="input-icon grow">
+              <app-icon name="id-card" [size]="15" />
+              <input id="dni" class="input" [class.is-invalid]="errorDni()" [value]="dni()"
+                (input)="dni.set($any($event.target).value)" placeholder="12345678Z" maxlength="9" autocomplete="off" />
+            </div>
+            <button type="submit" class="btn btn--primary">Validar</button>
+          </div>
+        </form>
+        @if (errorDni(); as e) {
+          <app-alert tone="danger">{{ e }}</app-alert>
+        }
+      </section>
+
+      <app-alert tone="info" title="Solo se aplica la ventaja mayor">
+        Se aplica el mayor descuento entre cupón y socio, nunca se suman. El total nunca será negativo.
+      </app-alert>
+    </div>
+
+    <aside class="card card--roomy stack summary">
+      <h2 class="t-h3">Resumen del pedido</h2>
+      <div class="row row--between t-small">
+        <span class="muted">{{ carrito.unidades() }} productos</span>
+        <strong>{{ carrito.subtotal() | euro }}</strong>
+      </div>
+      @if (carrito.descuento(); as d) {
+        <div class="row row--between t-small">
+          <span class="muted">{{ d.etiqueta }}</span>
+          <strong class="discount">{{ formatDescuento(d.importe) }}</strong>
+        </div>
+      }
+      <hr class="divider" />
+      <div class="row row--between t-small">
+        <span class="muted">Base imponible</span>
+        <strong>{{ carrito.desglose().base | euro }}</strong>
+      </div>
+      <div class="row row--between t-small">
+        <span class="muted">IVA 10 %</span>
+        <strong>{{ carrito.desglose().iva | euro }}</strong>
+      </div>
+      <div class="row row--between total">
+        <strong class="t-body-l">Total</strong>
+        <strong class="t-h1 tabular">{{ carrito.total() | euro }}</strong>
+      </div>
+
+      @if (carrito.descuento(); as d) {
+        <app-alert tone="success" [title]="ganaSocio() ? 'Socio FitZone validado' : 'Cupón aplicado'">
+          {{ ganaSocio() ? 'DNI ' + carrito.dniSocio() + ' · descuento 10 % aplicado automáticamente.' : d.etiqueta + ' · ' + formatDescuento(d.importe) }}
+        </app-alert>
+      }
+
+      <button type="button" class="btn btn--primary" [disabled]="enviando()" (click)="confirmar()">
+        <app-icon name="circle-check" /> {{ enviando() ? 'Confirmando…' : 'Confirmar pedido' }}
+      </button>
+      <p class="t-small muted">Al confirmar recibirás un número de turno diario y podrás seguir el estado en tiempo real.</p>
+    </aside>
+  </div>
+}

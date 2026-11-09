@@ -1,0 +1,399 @@
+/* ==========================================================================
+   The Coffee Room — estilos globales
+   Tokens extraídos del mockup de Figma (colores, radios, sombras y escala tipográfica).
+   ========================================================================== */
+
+:root {
+  /* Color */
+  --c-text: #2e211b;
+  --c-muted: #76665d;
+  --c-page: #f4eee5;
+  --c-surface: #fffcf7;
+  --c-border: #d8c9ba;
+  --c-sand: #ede0d0;
+  --c-accent: #e8d1a7;
+  --c-primary: #743014;
+  --c-primary-hover: #5f2610;
+  --c-sidebar: #3c3743;
+  --c-sidebar-muted: #bba99e;
+
+  --c-success: #2f6b52;
+  --c-success-bg: #dceadf;
+  --c-info: #356c75;
+  --c-info-bg: #dceaec;
+  --c-danger: #a43d36;
+  --c-danger-bg: #f5dad5;
+  --c-warning: #9b650e;
+  --c-warning-bg: #f7e8c7;
+  --c-neutral: #4b2e24;
+
+  --c-disabled-bg: #eae3da;
+  --c-disabled-fg: #9c9189;
+
+  /* Tipografía */
+  --f-serif: 'Fraunces', Georgia, serif;
+  --f-sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Forma */
+  --r-pill: 999px;
+  --r-card: 18px;
+  --r-field: 12px;
+  --shadow-card: 0 6px 18px rgba(57, 37, 27, 0.09);
+
+  --sidebar-w: 232px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--c-page);
+  color: var(--c-text);
+  font: 400 13px/1.4 var(--f-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+}
+
+/* ---------- Escala tipográfica (equivale a los estilos de texto de Figma) ---------- */
+.t-display {
+  font: 600 36px/1.2 var(--f-serif);
+  letter-spacing: -0.01em;
+}
+.t-h1 {
+  font: 600 30px/1.2 var(--f-serif);
+  letter-spacing: -0.005em;
+}
+.t-h2 {
+  font: 600 26px/1.2 var(--f-serif);
+  letter-spacing: -0.005em;
+}
+.t-h3 {
+  font: 600 20px/1.25 var(--f-serif);
+}
+.t-title {
+  font: 700 18px/1.3 var(--f-sans);
+}
+.t-title-s {
+  font: 800 15px/1.3 var(--f-sans);
+}
+.t-body-l {
+  font: 500 16px/1.4 var(--f-sans);
+}
+.t-body {
+  font: 400 13px/1.4 var(--f-sans);
+}
+.t-body-strong {
+  font: 700 13px/1.4 var(--f-sans);
+}
+.t-small {
+  font: 400 12px/1.4 var(--f-sans);
+}
+.t-caption {
+  font: 400 11px/1.35 var(--f-sans);
+}
+.t-label {
+  font: 800 11px/1.3 var(--f-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+.muted {
+  color: var(--c-muted);
+}
+.price {
+  font-weight: 800;
+  color: var(--c-primary);
+  white-space: nowrap;
+}
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Superficies ---------- */
+.card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  padding: 20px;
+}
+.card--roomy {
+  padding: 22px;
+}
+.card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.divider {
+  height: 1px;
+  background: var(--c-border);
+  border: 0;
+  margin: 4px 0;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.row--between {
+  justify-content: space-between;
+}
+.grow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: var(--r-pill);
+  border: 1px solid transparent;
+  font: 700 13px/1 var(--f-sans);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+.btn--primary {
+  background: var(--c-primary);
+  color: #fff;
+}
+.btn--primary:hover:not(:disabled) {
+  background: var(--c-primary-hover);
+}
+.btn--secondary {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+  color: var(--c-text);
+}
+.btn--secondary:hover:not(:disabled) {
+  border-color: var(--c-muted);
+}
+.btn--danger {
+  background: var(--c-danger);
+  color: #fff;
+}
+.btn--ghost {
+  background: transparent;
+  color: var(--c-text);
+  padding: 0 12px;
+}
+.btn--ghost:hover:not(:disabled) {
+  background: var(--c-sand);
+}
+.btn--block {
+  width: 100%;
+}
+.btn--sm {
+  height: 34px;
+  padding: 0 14px;
+}
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  background: var(--c-disabled-bg);
+  border-color: transparent;
+  color: var(--c-disabled-fg);
+  cursor: not-allowed;
+}
+
+/* ---------- Chips de filtro ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  font: 700 13px/1 var(--f-sans);
+  cursor: pointer;
+}
+.chip.is-active {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+}
+.chip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ---------- Formularios ---------- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.input,
+.select {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-field);
+  background: var(--c-surface);
+  font: 400 13px var(--f-sans);
+}
+.input::placeholder {
+  color: var(--c-disabled-fg);
+}
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px rgba(116, 48, 20, 0.12);
+}
+.input.is-invalid {
+  border-color: var(--c-danger);
+}
+.select {
+  appearance: none;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232e211b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+}
+.input-icon {
+  position: relative;
+}
+.input-icon > app-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--c-muted);
+  pointer-events: none;
+}
+.input-icon > .input {
+  padding-left: 38px;
+}
+.form-grid {
+  display: grid;
+  gap: 14px;
+}
+.field-error {
+  color: var(--c-danger);
+  font-size: 12px;
+}
+
+/* ---------- Badges ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: var(--r-pill);
+  font: 800 11px/1 var(--f-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.badge--success {
+  background: var(--c-success-bg);
+  color: var(--c-success);
+}
+.badge--info {
+  background: var(--c-info-bg);
+  color: var(--c-info);
+}
+.badge--danger {
+  background: var(--c-danger-bg);
+  color: var(--c-danger);
+}
+.badge--warning {
+  background: var(--c-warning-bg);
+  color: var(--c-warning);
+}
+.badge--neutral {
+  background: var(--c-sand);
+  color: var(--c-neutral);
+}
+.badge--accent {
+  background: var(--c-accent);
+  color: var(--c-text);
+}
+
+/* ---------- Utilidades ---------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.link-btn {
+  text-decoration: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: 700 13px var(--f-sans);
+  color: var(--c-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.link-btn:hover {
+  text-decoration: underline;
+}

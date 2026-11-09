@@ -1,0 +1,24 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+.card__head {
+  align-items: flex-start;
+  margin-bottom: 0;
+}
+.summary .btn {
+  align-self: flex-start;
+}
+.discount {
+  color: var(--c-success);
+}
+.total {
+  align-items: baseline;
+}
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

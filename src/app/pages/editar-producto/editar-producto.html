@@ -1,0 +1,119 @@
+<app-page-header title="Gestión de carta" subtitle="Productos, categorías y alérgenos en un único espacio.">
+  <a class="btn btn--secondary" routerLink="/admin/carta"><app-icon name="arrow-left" /> Volver</a>
+</app-page-header>
+
+@if (!esNuevo() && !producto() && !productos.cargando()) {
+  <app-alert tone="warning" title="Producto no encontrado"><a routerLink="/admin/carta">Volver a la carta</a></app-alert>
+} @else {
+  <form class="card card--roomy stack" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+    <div class="card__head">
+      <h2 class="t-h3">{{ esNuevo() ? 'Nuevo producto' : 'Editar producto' }}</h2>
+      @if (producto(); as p) {
+        <app-status-badge tono="info" [texto]="p.nombre" />
+      }
+    </div>
+
+    <div class="form-grid cols-3">
+      <label class="field">
+        <span class="t-label">Nombre</span>
+        <input class="input" formControlName="nombre" [class.is-invalid]="campoInvalido('nombre')" />
+        @if (campoInvalido('nombre')) {
+          <span class="field-error">El nombre es obligatorio (máx. 60 caracteres).</span>
+        }
+      </label>
+      <label class="field">
+        <span class="t-label">Categoría</span>
+        <select class="select" formControlName="categoriaId">
+          @for (c of productos.categorias(); track c.id) {
+            <option [value]="c.id">{{ c.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label class="field">
+        <span class="t-label">Precio · IVA 10 % incluido</span>
+        <input class="input" type="number" step="0.05" min="0" formControlName="precio" [class.is-invalid]="campoInvalido('precio')" />
+        @if (campoInvalido('precio')) {
+          <span class="field-error">Introduce un precio entre 0,10 € y 99 €.</span>
+        }
+      </label>
+    </div>
+
+    <div class="form-grid cols-2">
+      <label class="field">
+        <span class="t-label">Disponibilidad</span>
+        <select class="select" formControlName="estado">
+          <option value="disponible">Disponible</option>
+          <option value="agotado">Agotado</option>
+          @if (form.controls.estado.value === 'retirado') {
+            <option value="retirado">Retirado</option>
+          }
+        </select>
+      </label>
+      <fieldset class="field allergens">
+        <legend class="t-label">Alérgenos</legend>
+        <div class="allergens__box">
+          @for (a of todosAlergenos; track a) {
+            <button type="button" class="badge" [class.badge--warning]="tieneAlergeno(a)" [class.is-off]="!tieneAlergeno(a)"
+              [attr.aria-pressed]="tieneAlergeno(a)" (click)="alternarAlergeno(a)">
+              {{ a }} @if (tieneAlergeno(a)) { <app-icon name="x" [size]="10" /> }
+            </button>
+          }
+        </div>
+      </fieldset>
+    </div>
+
+    <label class="field">
+      <span class="t-label">Descripción</span>
+      <textarea class="input textarea" rows="3" formControlName="descripcion"></textarea>
+    </label>
+
+    <app-alert tone="info" title="Cada pedido conserva su precio">
+      El precio vigente se fija al crear cada pedido. Los cambios futuros no alteran los pedidos anteriores.
+    </app-alert>
+
+    @if (guardado() && form.pristine) {
+      <app-alert tone="success">Cambios guardados.</app-alert>
+    }
+
+    <div class="row">
+      <button type="submit" class="btn btn--primary">{{ esNuevo() ? 'Crear producto' : 'Guardar cambios' }}</button>
+      <a class="btn btn--secondary" routerLink="/admin/carta">Cancelar</a>
+    </div>
+  </form>
+
+  @if (producto(); as p) {
+    <section class="card card--roomy retire">
+      <h2 class="t-h3">{{ p.estado === 'retirado' ? 'Producto retirado' : 'Retirar de la carta' }}</h2>
+      <div class="retire__body">
+        <div class="retire__summary">
+          <strong class="t-title-s">{{ p.nombre }}</strong>
+          <div class="row row--between">
+            <span class="t-small muted">{{ productos.nombreCategoria(p.categoriaId) }} · {{ p.alergenos.join(' · ') || 'Sin alérgenos' }}</span>
+            <strong>{{ p.precio | euro }}</strong>
+          </div>
+          <span class="t-caption muted">IVA 10 % incluido</span>
+        </div>
+
+        @if (p.estado === 'retirado') {
+          <app-alert tone="info" title="No aparece en la carta">
+            Se conserva en pedidos antiguos y ventas históricas.
+            <button alert-action type="button" class="btn btn--secondary btn--sm" (click)="reactivar()">Volver a la carta</button>
+          </app-alert>
+        } @else if (confirmarRetirada()) {
+          <div class="danger-box">
+            <strong class="danger-box__title"><app-icon name="circle-alert" /> ¿Retirar producto?</strong>
+            <p>{{ p.nombre }} desaparecerá de la carta y no podrá pedirse. Se conservará en los pedidos antiguos y en las ventas históricas.</p>
+            <div class="row">
+              <button type="button" class="btn btn--danger" (click)="retirar()">Retirar producto</button>
+              <button type="button" class="btn btn--secondary" (click)="confirmarRetirada.set(false)">Cancelar</button>
+            </div>
+          </div>
+        } @else {
+          <div>
+            <button type="button" class="btn btn--danger" (click)="confirmarRetirada.set(true)">Retirar de la carta…</button>
+          </div>
+        }
+      </div>
+    </section>
+  }
+}

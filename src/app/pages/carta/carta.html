@@ -1,0 +1,61 @@
+<app-page-header title="Carta">
+  <a class="btn btn--primary" [routerLink]="auth.rol() === 'cliente' ? '/pedido' : '/acceder'">
+    <app-icon name="shopping-bag" />
+    Ver mi pedido · {{ carrito.unidades() }}
+  </a>
+</app-page-header>
+
+<section class="controls" aria-label="Filtros de la carta">
+  <div class="controls__row">
+    <div class="field grow">
+      <span class="t-label">Buscar en la carta</span>
+      <app-search-input [(value)]="texto" placeholder="Buscar" />
+    </div>
+    <app-filter-chips [opciones]="grupos" [(valor)]="grupo" etiqueta="Tipo de producto" />
+  </div>
+
+  <div class="controls__row">
+    <label class="field controls__price">
+      <span class="t-label">Precio máx.</span>
+      <select class="select" (change)="precioMax.set(+$any($event.target).value)">
+        @for (p of preciosMax; track p) {
+          <option [value]="p" [selected]="p === precioMax()">Hasta {{ p }},00 €</option>
+        }
+      </select>
+    </label>
+    <div class="field">
+      <span class="t-label">Disponibilidad</span>
+      <app-filter-chips [opciones]="disponibilidad" [(valor)]="estado" etiqueta="Disponibilidad" />
+    </div>
+    <label class="field grow">
+      <span class="t-label">Excluir alérgeno</span>
+      <select class="select" (change)="sinAlergeno.set($any($event.target).value)">
+        <option value="">Ninguno</option>
+        @for (a of alergenos; track a) {
+          <option [value]="a" [selected]="a === sinAlergeno()">{{ a }}</option>
+        }
+      </select>
+    </label>
+  </div>
+</section>
+
+<div class="summary">
+  <strong>{{ resultado().length }} productos</strong>
+  <span class="t-small muted">Disponibilidad actualizada ahora</span>
+</div>
+
+@if (productos.cargando()) {
+  <p class="muted">Cargando la carta…</p>
+} @else if (resultado().length) {
+  <ul class="grid">
+    @for (p of resultado(); track p.id) {
+      <li><app-product-card [producto]="p" [categoria]="productos.nombreCategoria(p.categoriaId)" /></li>
+    }
+  </ul>
+  <p class="end t-small muted">Has visto toda la carta · {{ resultado().length }} productos</p>
+} @else {
+  <div class="empty card">
+    <strong class="t-h3">No hay productos con estos filtros</strong>
+    <button type="button" class="btn btn--secondary" (click)="limpiar()">Quitar filtros</button>
+  </div>
+}

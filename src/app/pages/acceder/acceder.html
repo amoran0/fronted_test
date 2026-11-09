@@ -1,0 +1,50 @@
+<app-page-header title="Acceder" subtitle="Inicia sesión para hacer pedidos o gestionar la cafetería." />
+
+<div class="login">
+  <form class="card card--roomy stack" [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+    <h2 class="t-h3">Iniciar sesión</h2>
+
+    <label class="field">
+      <span class="t-label">Email</span>
+      <input class="input" type="email" formControlName="email" autocomplete="email"
+        [class.is-invalid]="form.controls.email.touched && form.controls.email.invalid" />
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <span class="field-error">Introduce un email válido.</span>
+      }
+    </label>
+
+    <label class="field">
+      <span class="t-label">Contraseña</span>
+      <input class="input" type="password" formControlName="password" autocomplete="current-password"
+        [class.is-invalid]="form.controls.password.touched && form.controls.password.invalid" />
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <span class="field-error">Mínimo 6 caracteres.</span>
+      }
+    </label>
+
+    @if (error(); as e) {
+      <app-alert tone="danger" title="No se ha podido entrar">{{ e }}</app-alert>
+    }
+
+    <button class="btn btn--primary" type="submit" [disabled]="enviando()">
+      <app-icon name="log-in" /> {{ enviando() ? 'Entrando…' : 'Entrar' }}
+    </button>
+  </form>
+
+  @if (demo.length) {
+    <aside class="card card--roomy stack">
+      <h2 class="t-h3">Accesos de demostración</h2>
+      <p class="t-small muted">Datos de ejemplo. Contraseña: <strong>demo1234</strong></p>
+      @for (u of demo; track u.id) {
+        <button type="button" class="demo" (click)="rellenar(u.email, u.password)">
+          <span class="badge badge--accent">{{ etiquetaRol[u.rol] }}</span>
+          <span class="grow">
+            <strong>{{ u.nombre }}</strong>
+            <span class="t-small muted">{{ u.email }}</span>
+          </span>
+          <app-icon name="arrow-right" />
+        </button>
+      }
+    </aside>
+  }
+</div>
