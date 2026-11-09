@@ -15,10 +15,10 @@
   background: var(--c-surface);
   text-align: left;
   cursor: pointer;
-  .grow {
-    display: flex;
-    flex-direction: column;
-  }
+}
+.demo .grow {
+  display: flex;
+  flex-direction: column;
 }
 .demo:hover {
   border-color: var(--c-muted);

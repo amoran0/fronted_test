@@ -49,13 +49,13 @@
   gap: 24px;
   margin: 0;
   width: 100%;
-  dd {
-    margin: 6px 0 0;
-    font-weight: 700;
-  }
-  .is-out {
-    color: var(--c-danger);
-  }
+}
+.facts dd {
+  margin: 6px 0 0;
+  font-weight: 700;
+}
+.facts .is-out {
+  color: var(--c-danger);
 }
 @media (max-width: 1000px) {
   .detail {

@@ -47,9 +47,9 @@
   flex-direction: column;
   gap: 8px;
   margin-top: -12px;
-  .t-label {
-    color: var(--c-sidebar-muted);
-  }
+}
+.turno .t-label {
+  color: var(--c-sidebar-muted);
 }
 .turno__box {
   background: var(--c-surface);

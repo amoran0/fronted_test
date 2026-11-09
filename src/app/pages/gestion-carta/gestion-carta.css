@@ -15,14 +15,14 @@
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 14px;
-  td {
-    padding: 11px 6px;
-    vertical-align: middle;
-  }
-  .num {
-    text-align: right;
-    white-space: nowrap;
-  }
+}
+.table td {
+  padding: 11px 6px;
+  vertical-align: middle;
+}
+.table .num {
+  text-align: right;
+  white-space: nowrap;
 }
 .head {
   margin-bottom: 14px;

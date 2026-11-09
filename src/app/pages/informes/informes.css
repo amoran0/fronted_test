@@ -63,11 +63,11 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  li {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
+}
+.ranking li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 .ranking__pos {
   width: 18px;

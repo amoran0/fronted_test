@@ -13,7 +13,7 @@ import { formatEuro, formatFecha, hoyIso } from '../../utils/formato';
   selector: 'app-informes-page',
   imports: [PageHeader, KpiCard, Icon, EuroPipe],
   templateUrl: './informes.html',
-  styleUrl: './informes.scss',
+  styleUrl: './informes.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InformesPage {

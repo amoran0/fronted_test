@@ -119,9 +119,6 @@ textarea {
 .t-body {
   font: 400 13px/1.4 var(--f-sans);
 }
-.t-body-strong {
-  font: 700 13px/1.4 var(--f-sans);
-}
 .t-small {
   font: 400 12px/1.4 var(--f-sans);
 }
@@ -234,9 +231,6 @@ textarea {
 .btn--ghost:hover:not(:disabled) {
   background: var(--c-sand);
 }
-.btn--block {
-  width: 100%;
-}
 .btn--sm {
   height: 34px;
   padding: 0 14px;
@@ -327,6 +321,9 @@ textarea {
 .form-grid {
   display: grid;
   gap: 14px;
+}
+.cols-2 {
+  grid-template-columns: 1fr 1fr;
 }
 .field-error {
   color: var(--c-danger);

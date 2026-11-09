@@ -2,6 +2,7 @@ import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { DescuentoAplicado, LineaPedido, MAX_LINEAS, MAX_UNIDADES_LINEA } from '../models/pedido';
 import { Producto } from '../models/producto';
 import { calcularSubtotal, calcularTotal, descuentoPorcentaje, desglosarIva, mejorDescuento } from '../utils/calculos';
+import { guardarJson, leerJson } from '../utils/almacen';
 import { esDniValido } from '../utils/validaciones';
 import { AuthService } from './auth.service';
 import { CuponService } from './cupon.service';
@@ -17,6 +18,13 @@ interface LineaGuardada {
 const CLAVE = 'tcr.carrito';
 const DESCUENTO_SOCIO = 10;
 
+/** Carrito de demostración que reproduce el mockup. */
+const CARRITO_DEMO: LineaGuardada[] = [
+  { productoId: 'flat-white', cantidad: 2, opciones: ['Leche de avena', 'Extra caliente'], precioUnitario: 3.2 },
+  { productoId: 'tostada-aguacate', cantidad: 1, opciones: ['Sin cambios'], precioUnitario: 6.9 },
+  { productoId: 'fitzone-proteina', cantidad: 1, opciones: ['Sabor vainilla'], precioUnitario: 5.9 },
+];
+
 /** Carrito del cliente y descuentos del paso de confirmación. */
 @Injectable({ providedIn: 'root' })
 export class CarritoService {
@@ -24,7 +32,7 @@ export class CarritoService {
   private readonly cupones = inject(CuponService);
   private readonly auth = inject(AuthService);
 
-  private readonly guardadas = signal<LineaGuardada[]>(this.leer());
+  private readonly guardadas = signal(leerJson<LineaGuardada[]>(CLAVE) ?? CARRITO_DEMO);
 
   /** Líneas con el producto actualizado (para detectar agotados en tiempo real). */
   readonly lineas = computed<LineaPedido[]>(() =>
@@ -61,13 +69,7 @@ export class CarritoService {
   readonly desglose = computed(() => desglosarIva(this.total()));
 
   constructor() {
-    effect(() => {
-      try {
-        localStorage.setItem(CLAVE, JSON.stringify(this.guardadas()));
-      } catch {
-        /* sin almacenamiento */
-      }
-    });
+    effect(() => guardarJson(CLAVE, this.guardadas()));
   }
 
   /** Devuelve `false` si se alcanzó el máximo de líneas. */
@@ -108,20 +110,5 @@ export class CarritoService {
     this.guardadas.set([]);
     this.codigoCupon.set(null);
     this.dniSocio.set(null);
-  }
-
-  private leer(): LineaGuardada[] {
-    try {
-      const raw = localStorage.getItem(CLAVE);
-      if (raw) return JSON.parse(raw);
-    } catch {
-      /* sin almacenamiento */
-    }
-    // Carrito de demostración que reproduce el mockup.
-    return [
-      { productoId: 'flat-white', cantidad: 2, opciones: ['Leche de avena', 'Extra caliente'], precioUnitario: 3.2 },
-      { productoId: 'tostada-aguacate', cantidad: 1, opciones: ['Sin cambios'], precioUnitario: 6.9 },
-      { productoId: 'fitzone-proteina', cantidad: 1, opciones: ['Sabor vainilla'], precioUnitario: 5.9 },
-    ];
   }
 }

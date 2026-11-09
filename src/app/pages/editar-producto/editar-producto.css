@@ -1,9 +1,6 @@
 .cols-3 {
   grid-template-columns: 2fr 1fr 1fr;
 }
-.cols-2 {
-  grid-template-columns: 1fr 1fr;
-}
 .textarea {
   height: auto;
   padding: 12px 14px;

@@ -8,12 +8,13 @@ import { StatusBadge } from '../../components/status-badge/status-badge';
 import { ALERGENOS, Alergeno, EstadoProducto, Producto } from '../../models/producto';
 import { ProductoService } from '../../services/producto.service';
 import { EuroPipe } from '../../utils/euro.pipe';
+import { slug } from '../../utils/formato';
 
 @Component({
   selector: 'app-editar-producto-page',
   imports: [ReactiveFormsModule, PageHeader, Alert, Icon, StatusBadge, EuroPipe, RouterLink],
   templateUrl: './editar-producto.html',
-  styleUrl: './editar-producto.scss',
+  styleUrl: './editar-producto.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditarProductoPage {
@@ -71,9 +72,7 @@ export class EditarProductoPage {
       return;
     }
     const v = this.form.getRawValue();
-    const id = this.esNuevo()
-      ? v.nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-')
-      : this.id();
+    const id = this.esNuevo() ? slug(v.nombre) : this.id();
     const base: Partial<Producto> = this.producto() ?? {};
     this.productos.guardar({ ...base, ...v, id, precio: Math.round(v.precio * 100) / 100 } as Producto).subscribe(() => {
       this.guardado.set(true);

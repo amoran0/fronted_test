@@ -6,7 +6,7 @@ import { Icon } from '../../components/icon/icon';
 import { PageHeader } from '../../components/page-header/page-header';
 import { SearchInput } from '../../components/search-input/search-input';
 import { StatusBadge } from '../../components/status-badge/status-badge';
-import { ALERGENOS } from '../../models/producto';
+import { ALERGENOS, Alergeno } from '../../models/producto';
 import { ProductoService } from '../../services/producto.service';
 import { EuroPipe } from '../../utils/euro.pipe';
 
@@ -14,7 +14,7 @@ import { EuroPipe } from '../../utils/euro.pipe';
   selector: 'app-gestion-carta-page',
   imports: [PageHeader, SearchInput, FilterChips, StatusBadge, Alert, Icon, EuroPipe, RouterLink],
   templateUrl: './gestion-carta.html',
-  styleUrl: './gestion-carta.scss',
+  styleUrl: './gestion-carta.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GestionCartaPage {
@@ -46,7 +46,7 @@ export class GestionCartaPage {
     if (nombre?.trim()) this.productos.crearCategoria(nombre).subscribe();
   }
 
-  protected usos(alergeno: string): number {
-    return this.productos.productos().filter((p) => p.alergenos.includes(alergeno as never)).length;
+  protected usos(alergeno: Alergeno): number {
+    return this.productos.productos().filter((p) => p.alergenos.includes(alergeno)).length;
   }
 }

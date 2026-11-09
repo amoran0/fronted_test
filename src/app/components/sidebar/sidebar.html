@@ -1,13 +1,13 @@
 <nav class="sidebar" aria-label="Navegación principal">
   <a class="brand" routerLink="/carta" aria-label="The Coffee Room, ir a la carta">
-    <span class="brand__line">THE <img class="brand__mark" src="logo-cup.svg" alt="" width="26" height="26" /></span>
+    <span class="brand__line">THE <img class="brand__mark" src="logo-cup.svg" alt="" width="36" height="36" /></span>
     <span class="brand__line">COFFEE</span>
     <span class="brand__line">ROOM</span>
   </a>
 
   <div class="role">
     <app-icon [name]="config().icono" [size]="15" />
-    <span>{{ config().etiqueta }}</span>
+    <span>{{ auth.usuario()?.nombre ?? config().etiqueta }}</span>
   </div>
 
   @if (auth.rol() === 'barista') {
@@ -36,9 +36,8 @@
     </span>
   </div>
 
-  @if (auth.usuario(); as u) {
+  @if (auth.usuario()) {
     <div class="session">
-      <span class="session__name">{{ u.nombre }}</span>
       <button type="button" class="session__out" (click)="auth.logout()">
         <app-icon name="log-out" [size]="14" /> Cerrar sesión
       </button>

@@ -13,7 +13,7 @@ import { EuroPipe } from '../../utils/euro.pipe';
   selector: 'app-detalle-producto-page',
   imports: [PageHeader, StatusBadge, Alert, Icon, EuroPipe, RouterLink],
   templateUrl: './detalle-producto.html',
-  styleUrl: './detalle-producto.scss',
+  styleUrl: './detalle-producto.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DetalleProductoPage {

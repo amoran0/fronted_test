@@ -14,7 +14,7 @@ import { formatEuro, hoyIso } from '../../utils/formato';
   selector: 'app-cupones-solicitudes-page',
   imports: [ReactiveFormsModule, PageHeader, Alert, Icon, RouterLink],
   templateUrl: './cupones-solicitudes.html',
-  styleUrl: './cupones-solicitudes.scss',
+  styleUrl: './cupones-solicitudes.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CuponesSolicitudesPage {

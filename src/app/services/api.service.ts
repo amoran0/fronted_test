@@ -11,29 +11,25 @@ import { environment } from '../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
-  private readonly base = environment.apiUrl;
 
   get<T>(ruta: string, mock: () => T): Observable<T> {
-    return environment.useMocks ? this.simular(mock) : this.http.get<T>(this.base + ruta);
+    return this.pedir('GET', ruta, undefined, mock);
   }
 
   post<T>(ruta: string, cuerpo: unknown, mock: () => T): Observable<T> {
-    return environment.useMocks ? this.simular(mock) : this.http.post<T>(this.base + ruta, cuerpo);
+    return this.pedir('POST', ruta, cuerpo, mock);
   }
 
   put<T>(ruta: string, cuerpo: unknown, mock: () => T): Observable<T> {
-    return environment.useMocks ? this.simular(mock) : this.http.put<T>(this.base + ruta, cuerpo);
+    return this.pedir('PUT', ruta, cuerpo, mock);
   }
 
   patch<T>(ruta: string, cuerpo: unknown, mock: () => T): Observable<T> {
-    return environment.useMocks ? this.simular(mock) : this.http.patch<T>(this.base + ruta, cuerpo);
+    return this.pedir('PATCH', ruta, cuerpo, mock);
   }
 
-  delete<T>(ruta: string, mock: () => T): Observable<T> {
-    return environment.useMocks ? this.simular(mock) : this.http.delete<T>(this.base + ruta);
-  }
-
-  private simular<T>(mock: () => T): Observable<T> {
-    return defer(() => of(structuredClone(mock()))).pipe(delay(150));
+  private pedir<T>(metodo: string, ruta: string, body: unknown, mock: () => T): Observable<T> {
+    if (environment.useMocks) return defer(() => of(structuredClone(mock()))).pipe(delay(150));
+    return this.http.request<T>(metodo, environment.apiUrl + ruta, { body });
   }
 }

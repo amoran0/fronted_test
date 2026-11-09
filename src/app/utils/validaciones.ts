@@ -12,10 +12,6 @@ export function esDniValido(dni: string): boolean {
   return LETRAS_DNI[Number(m[1]) % 23] === m[2];
 }
 
-export function esEmailValido(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
-}
-
 /** Código de cupón: letras, números (y Ñ), entre 4 y 16 caracteres. */
 export function esCodigoCuponValido(codigo: string): boolean {
   return /^[A-ZÑ0-9]{4,16}$/.test(codigo.trim().toUpperCase());

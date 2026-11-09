@@ -14,7 +14,7 @@ import { totalLinea } from '../../utils/calculos';
   selector: 'app-realiza-pedido-page',
   imports: [PageHeader, Alert, Icon, QuantityStepper, StatusBadge, EuroPipe, RouterLink],
   templateUrl: './realiza-pedido.html',
-  styleUrl: './realiza-pedido.scss',
+  styleUrl: './realiza-pedido.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RealizaPedidoPage {

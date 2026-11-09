@@ -37,7 +37,7 @@
     <hr class="divider" />
 
     <div class="row row--between">
-      <span>{{ resumenLineas(p) }}</span>
+      <span>{{ resumenLineas(p.lineas) }}</span>
       <div class="totals">
         <span class="t-caption muted">
           Subtotal {{ p.subtotal | euro }}
@@ -68,7 +68,7 @@
         <app-status-badge [estado]="p.estado" [tono]="p.estado === 'entregado' ? 'info' : undefined" />
       </div>
       <span class="t-small muted">{{ formatFechaCorta(p.fecha) }} · {{ formatHora(p.fecha) }}</span>
-      <span>{{ resumenLineas(p) }}</span>
+      <span>{{ resumenLineas(p.lineas) }}</span>
       <strong class="t-h3">{{ p.total | euro }}</strong>
     </li>
   } @empty {

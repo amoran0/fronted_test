@@ -7,13 +7,13 @@ import { StatusBadge } from '../../components/status-badge/status-badge';
 import { ETIQUETA_ESTADO, FLUJO_PEDIDO, Pedido } from '../../models/pedido';
 import { PedidoService } from '../../services/pedido.service';
 import { EuroPipe } from '../../utils/euro.pipe';
-import { formatDescuento, formatFechaCorta, formatHora } from '../../utils/formato';
+import { formatDescuento, formatFechaCorta, formatHora, resumenLineas } from '../../utils/formato';
 
 @Component({
   selector: 'app-mis-pedidos-page',
   imports: [PageHeader, Alert, Icon, StatusBadge, EuroPipe, RouterLink],
   templateUrl: './mis-pedidos.html',
-  styleUrl: './mis-pedidos.scss',
+  styleUrl: './mis-pedidos.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MisPedidosPage {
@@ -23,10 +23,7 @@ export class MisPedidosPage {
   protected readonly formatHora = formatHora;
   protected readonly formatFechaCorta = formatFechaCorta;
   protected readonly formatDescuento = formatDescuento;
-
-  protected resumenLineas(p: Pedido): string {
-    return p.lineas.map((l) => `${l.cantidad} × ${l.nombre}`).join(' · ');
-  }
+  protected readonly resumenLineas = resumenLineas;
 
   protected paso(p: Pedido): number {
     return FLUJO_PEDIDO.indexOf(p.estado);

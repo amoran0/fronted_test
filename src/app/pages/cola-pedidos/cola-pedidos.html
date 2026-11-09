@@ -24,9 +24,9 @@
         <app-status-badge [estado]="p.estado" />
       </div>
       <span class="t-small" [class.late]="esperaAlta(p)" [class.muted]="!esperaAlta(p)">
-        {{ formatHora(p.fecha) }}{{ esperaAlta(p) ? ' · espera alta (' + minutos(p) + ' min)' : '' }}
+        {{ formatHora(p.fecha) }}{{ esperaAlta(p) ? ' · espera alta (' + minutosDesde(p.fecha) + ' min)' : '' }}
       </span>
-      <p>{{ resumen(p) }}</p>
+      <p>{{ resumenLineas(p.lineas) }}</p>
       <div class="row tags">
         <app-status-badge [estado]="p.pagado ? 'pagado' : 'pendiente'" [texto]="p.pagado ? 'Pagado' : 'Sin pagar'" />
         @if (p.alergiasDeclaradas) {
@@ -51,7 +51,7 @@
       </div>
     </li>
   } @empty {
-    <li class="card">No hay pedidos en cola. 🎉</li>
+    <li class="card">No hay pedidos en cola. </li>
   }
 </ul>
 

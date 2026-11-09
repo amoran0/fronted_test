@@ -58,7 +58,7 @@ const MENU: Record<Rol, ConfigRol> = {
   selector: 'app-sidebar',
   imports: [RouterLink, RouterLinkActive, Icon],
   templateUrl: './sidebar.html',
-  styleUrl: './sidebar.scss',
+  styleUrl: './sidebar.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Sidebar {

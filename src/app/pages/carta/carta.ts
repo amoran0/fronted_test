@@ -5,7 +5,7 @@ import { Icon } from '../../components/icon/icon';
 import { PageHeader } from '../../components/page-header/page-header';
 import { ProductCard } from '../../components/product-card/product-card';
 import { SearchInput } from '../../components/search-input/search-input';
-import { ALERGENOS } from '../../models/producto';
+import { ALERGENOS, Alergeno } from '../../models/producto';
 import { AuthService } from '../../services/auth.service';
 import { CarritoService } from '../../services/carrito.service';
 import { ProductoService } from '../../services/producto.service';
@@ -14,7 +14,7 @@ import { ProductoService } from '../../services/producto.service';
   selector: 'app-carta-page',
   imports: [PageHeader, ProductCard, FilterChips, SearchInput, Icon, RouterLink],
   templateUrl: './carta.html',
-  styleUrl: './carta.scss',
+  styleUrl: './carta.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CartaPage {
@@ -42,7 +42,7 @@ export class CartaPage {
   protected readonly grupo = signal('todos');
   protected readonly estado = signal('todos');
   protected readonly precioMax = signal(10);
-  protected readonly sinAlergeno = signal('');
+  protected readonly sinAlergeno = signal<Alergeno | ''>('');
 
   protected readonly resultado = computed(() => {
     const q = this.texto().trim().toLowerCase();
@@ -53,7 +53,7 @@ export class CartaPage {
         (this.grupo() === 'todos' || cat?.grupo === this.grupo()) &&
         (this.estado() === 'todos' || p.estado === this.estado()) &&
         p.precio <= this.precioMax() &&
-        (!this.sinAlergeno() || !p.alergenos.includes(this.sinAlergeno() as never))
+        (!this.sinAlergeno() || !p.alergenos.includes(this.sinAlergeno() as Alergeno))
       );
     });
   });

@@ -1,7 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { EstadoPedido, FLUJO_PEDIDO, Pedido } from '../models/pedido';
-import { minutosDesde } from '../utils/formato';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
 import { CarritoService } from './carrito.service';
@@ -51,10 +50,6 @@ export class PedidoService {
       this._pedidos.set(p);
       this.ultimaActualizacion.set(new Date());
     });
-  }
-
-  esperaMinutos(p: Pedido): number {
-    return minutosDesde(p.fecha);
   }
 
   siguienteEstado(estado: EstadoPedido): EstadoPedido | null {

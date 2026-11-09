@@ -26,7 +26,7 @@ function reglasCupon(g: AbstractControl): ValidationErrors | null {
   selector: 'app-cupones-page',
   imports: [ReactiveFormsModule, PageHeader, KpiCard, SearchInput, StatusBadge, Alert, Icon, RouterLink],
   templateUrl: './cupones.html',
-  styleUrl: './cupones.scss',
+  styleUrl: './cupones.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CuponesPage {

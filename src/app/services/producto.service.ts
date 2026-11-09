@@ -3,6 +3,7 @@ import { Observable, tap } from 'rxjs';
 import { Categoria, EstadoProducto, Producto } from '../models/producto';
 import { ApiService } from './api.service';
 import { MOCK_CATEGORIAS, MOCK_PRODUCTOS } from './mock-data';
+import { slug } from '../utils/formato';
 
 @Injectable({ providedIn: 'root' })
 export class ProductoService {
@@ -11,7 +12,6 @@ export class ProductoService {
   private readonly _productos = signal<Producto[]>([]);
   private readonly _categorias = signal<Categoria[]>([]);
   readonly cargando = signal(true);
-  readonly actualizado = signal<Date | null>(null);
 
   readonly productos = this._productos.asReadonly();
   readonly categorias = this._categorias.asReadonly();
@@ -28,7 +28,6 @@ export class ProductoService {
     this.api.get('/productos', () => MOCK_PRODUCTOS).subscribe((p) => {
       this._productos.set(p);
       this.cargando.set(false);
-      this.actualizado.set(new Date());
     });
   }
 
@@ -62,8 +61,7 @@ export class ProductoService {
   }
 
   crearCategoria(nombre: string, grupo: Categoria['grupo'] = 'comida'): Observable<Categoria> {
-    const id = nombre.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-');
-    const categoria: Categoria = { id, nombre: nombre.trim(), grupo };
+    const categoria: Categoria = { id: slug(nombre.trim()), nombre: nombre.trim(), grupo };
     return this.api
       .post<Categoria>('/categorias', categoria, () => categoria)
       .pipe(tap((c) => this._categorias.update((l) => [...l.filter((x) => x.id !== c.id), c])));

@@ -11,11 +11,10 @@ export class CuponService {
   private readonly _cupones = signal<Cupon[]>([]);
   readonly cupones = this._cupones.asReadonly();
 
-  readonly activos = computed(() => this._cupones().filter((c) => this.estado(c) === 'activo' || this.estado(c) === 'personal').length);
-  /** Canjes de los cupones vigentes (activos o personales). */
-  readonly canjesMes = computed(() =>
-    this._cupones().filter((c) => ['activo', 'personal'].includes(this.estado(c))).reduce((acc, c) => acc + c.usos, 0),
-  );
+  /** Cupones vigentes: activos o personales. */
+  private readonly vigentes = computed(() => this._cupones().filter((c) => ['activo', 'personal'].includes(this.estado(c))));
+  readonly activos = computed(() => this.vigentes().length);
+  readonly canjesMes = computed(() => this.vigentes().reduce((acc, c) => acc + c.usos, 0));
   readonly descuentoConcedido = signal(428.6);
 
   constructor() {

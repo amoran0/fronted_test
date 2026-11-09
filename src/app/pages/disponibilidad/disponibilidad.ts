@@ -7,12 +7,18 @@ import { StatusBadge } from '../../components/status-badge/status-badge';
 import { EstadoProducto, Producto } from '../../models/producto';
 import { ProductoService } from '../../services/producto.service';
 
+const NOTA: Record<EstadoProducto, string> = {
+  disponible: 'En servicio',
+  agotado: 'Agotado por el barista',
+  retirado: 'Retirado',
+};
+
 /** El barista abre o agota productos sin tocar la carta administrativa. */
 @Component({
   selector: 'app-disponibilidad-page',
   imports: [PageHeader, SearchInput, StatusBadge, Alert, Icon],
   templateUrl: './disponibilidad.html',
-  styleUrl: './disponibilidad.scss',
+  styleUrl: './disponibilidad.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DisponibilidadPage {
@@ -40,10 +46,9 @@ export class DisponibilidadPage {
   });
 
   protected cambiar(p: Producto, estado: EstadoProducto): void {
-    const nota = estado === 'disponible' ? 'En servicio' : 'Agotado por el barista';
-    this.productos.cambiarEstado([p.id], estado, nota).subscribe(() =>
-      this.mensaje.set(`${p.nombre} marcado como ${estado === 'disponible' ? 'disponible' : 'agotado'}.`),
-    );
+    this.productos
+      .cambiarEstado([p.id], estado, NOTA[estado])
+      .subscribe(() => this.mensaje.set(`${p.nombre} marcado como ${estado}.`));
   }
 
   /** Cambio masivo: requiere un segundo clic de confirmación. */
@@ -53,7 +58,7 @@ export class DisponibilidadPage {
       return;
     }
     const ids = this.editables().map((p) => p.id);
-    this.productos.cambiarEstado(ids, estado, estado === 'disponible' ? 'En servicio' : 'Agotado por el barista').subscribe(() => {
+    this.productos.cambiarEstado(ids, estado, NOTA[estado]).subscribe(() => {
       this.mensaje.set(`${ids.length} productos marcados como ${estado === 'disponible' ? 'disponibles' : 'agotados'}.`);
       this.confirmar.set(null);
     });
@@ -65,7 +70,7 @@ export class DisponibilidadPage {
       this.mensaje.set('No hay productos agotados que reponer.');
       return;
     }
-    this.productos.cambiarEstado(agotados.map((p) => p.id), 'disponible', 'En servicio').subscribe(() =>
+    this.productos.cambiarEstado(agotados.map((p) => p.id), 'disponible', NOTA.disponible).subscribe(() =>
       this.mensaje.set(`Reposición registrada · ${agotados.length} productos vuelven a estar disponibles.`),
     );
   }

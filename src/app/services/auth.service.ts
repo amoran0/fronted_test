@@ -4,6 +4,7 @@ import { Observable, tap } from 'rxjs';
 import { Credenciales, Rol, Sesion } from '../models/usuario';
 import { ApiService } from './api.service';
 import { MOCK_USUARIOS } from './mock-data';
+import { guardarJson, leerJson } from '../utils/almacen';
 
 const CLAVE = 'tcr.sesion';
 
@@ -20,7 +21,7 @@ export class AuthService {
   private readonly api = inject(ApiService);
   private readonly router = inject(Router);
 
-  private readonly sesion = signal<Sesion | null>(this.leer());
+  private readonly sesion = signal(leerJson<Sesion>(CLAVE));
 
   readonly usuario = computed(() => this.sesion()?.usuario ?? null);
   readonly token = computed(() => this.sesion()?.token ?? null);
@@ -45,25 +46,8 @@ export class AuthService {
     this.router.navigateByUrl('/carta');
   }
 
-  tieneRol(...roles: Rol[]): boolean {
-    return roles.includes(this.rol());
-  }
-
   private guardar(s: Sesion | null): void {
     this.sesion.set(s);
-    try {
-      s ? localStorage.setItem(CLAVE, JSON.stringify(s)) : localStorage.removeItem(CLAVE);
-    } catch {
-      /* almacenamiento no disponible: la sesión vive solo en memoria */
-    }
-  }
-
-  private leer(): Sesion | null {
-    try {
-      const raw = localStorage.getItem(CLAVE);
-      return raw ? (JSON.parse(raw) as Sesion) : null;
-    } catch {
-      return null;
-    }
+    guardarJson(CLAVE, s);
   }
 }

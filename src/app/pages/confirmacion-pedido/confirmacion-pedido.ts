@@ -15,7 +15,7 @@ import { formatDescuento } from '../../utils/formato';
   selector: 'app-confirmacion-pedido-page',
   imports: [PageHeader, Alert, Icon, StatusBadge, EuroPipe, RouterLink],
   templateUrl: './confirmacion-pedido.html',
-  styleUrl: './confirmacion-pedido.scss',
+  styleUrl: './confirmacion-pedido.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmacionPedidoPage {

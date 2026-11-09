@@ -12,7 +12,7 @@ import { environment } from '../../../environments/environment';
   selector: 'app-acceder-page',
   imports: [ReactiveFormsModule, PageHeader, Alert, Icon],
   templateUrl: './acceder.html',
-  styleUrl: './acceder.scss',
+  styleUrl: './acceder.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccederPage {
