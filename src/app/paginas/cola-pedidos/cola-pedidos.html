@@ -1,0 +1,65 @@
+<app-cabecera-pagina titulo="Cola de pedidos" [subtitulo]="'Priorizada por estado y antigüedad; actualizada ' + tiempoDesdeActualizacion() + '.'">
+  <button type="button" class="boton boton--secundario" (click)="servicioPedidos.cargar()"><app-icono nombre="actualizar" /> Actualizar cola</button>
+</app-cabecera-pagina>
+
+<div class="indicadores">
+  <app-tarjeta-indicador etiqueta="Pendientes" [valor]="servicioPedidos.cantidadPorEstado().pendiente"
+    [pista]="servicioPedidos.pendienteMasAntiguo() ? 'Más antiguo: ' + minutosEsperaMasAntiguo() + ' min' : 'Sin pendientes'" />
+  <app-tarjeta-indicador etiqueta="En preparación" [valor]="servicioPedidos.cantidadPorEstado().en_preparacion" pista="En barra ahora" />
+  <app-tarjeta-indicador etiqueta="Listos" [valor]="servicioPedidos.cantidadPorEstado().listo" pista="Esperando recogida" />
+  <app-tarjeta-indicador etiqueta="Tiempo medio" valor="6:24" pista="−1:10 vs. ayer" />
+</div>
+
+@if (servicioPedidos.pendienteMasAntiguo(); as pendienteMasAntiguo) {
+  <app-aviso tono="peligro" titulo="Prioridad recomendada">
+    Prepara primero {{ pendienteMasAntiguo.turno }}: es el pedido pendiente más antiguo.
+  </app-aviso>
+}
+
+<ul class="cola">
+  @for (pedido of servicioPedidos.cola(); track pedido.id) {
+    <li class="tarjeta pila pedido">
+      <div class="fila fila--separada">
+        <h2 class="t-titulo-2">{{ pedido.turno }}</h2>
+        <app-etiqueta-estado [estado]="pedido.estado" />
+      </div>
+      <span class="t-pequeno" [class.retrasado]="tieneEsperaAlta(pedido)" [class.atenuado]="!tieneEsperaAlta(pedido)">
+        {{ formatearHora(pedido.fecha) }}{{ tieneEsperaAlta(pedido) ? ' · espera alta (' + minutosDesde(pedido.fecha) + ' min)' : '' }}
+      </span>
+      <p>{{ resumenLineas(pedido.lineas) }}</p>
+      <div class="fila etiquetas">
+        <app-etiqueta-estado [estado]="pedido.pagado ? 'pagado' : 'pendiente'" [texto]="pedido.pagado ? 'Pagado' : 'Sin pagar'" />
+        @if (pedido.alergiasDeclaradas) {
+          <app-etiqueta-estado tono="advertencia" [texto]="'Alergia: ' + pedido.alergiasDeclaradas" />
+        } @else {
+          <app-etiqueta-estado tono="neutro" texto="Sin alergias declaradas" />
+        }
+      </div>
+      <div class="fila acciones">
+        @switch (pedido.estado) {
+          @case ('pendiente') {
+            <button type="button" class="boton boton--primario expandir" (click)="avanzarEstado(pedido)">Preparar</button>
+            <button type="button" class="boton boton--peligro" (click)="cancelarPedido(pedido)">Cancelar</button>
+          }
+          @case ('en_preparacion') {
+            <button type="button" class="boton boton--primario expandir" (click)="avanzarEstado(pedido)">Marcar como listo</button>
+          }
+          @case ('listo') {
+            <button type="button" class="boton boton--secundario expandir" (click)="avanzarEstado(pedido)">Marcar entregado</button>
+          }
+        }
+      </div>
+    </li>
+  } @empty {
+    <li class="tarjeta">No hay pedidos en cola. </li>
+  }
+</ul>
+
+<div class="flujo" aria-label="Flujo de estados">
+  @for (estado of flujoEstados; track estado; let esUltimo = $last) {
+    <app-etiqueta-estado [estado]="estado" />
+    @if (!esUltimo) {
+      <app-icono nombre="flecha-derecha" [tamano]="12" class="atenuado" />
+    }
+  }
+</div>

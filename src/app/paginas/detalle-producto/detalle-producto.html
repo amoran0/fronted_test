@@ -1,0 +1,67 @@
+<app-cabecera-pagina titulo="Detalle del producto" subtitulo="Toda la información para elegir con tranquilidad.">
+  <a class="boton boton--secundario" routerLink="/carta"><app-icono nombre="flecha-izquierda" /> Volver a la carta</a>
+</app-cabecera-pagina>
+
+@if (producto(); as productoActual) {
+  <div class="detalle">
+    <div class="detalle__foto">
+      @if ((productoActual.imagenDetalle ?? productoActual.imagen) && !imagenNoDisponible()) {
+        <img [src]="productoActual.imagenDetalle ?? productoActual.imagen" [alt]="productoActual.nombre" (error)="imagenNoDisponible.set(true)" />
+      } @else {
+        <div class="detalle__sin-imagen"></div>
+      }
+    </div>
+
+    <article class="tarjeta detalle__informacion">
+      <div class="fila">
+        <app-etiqueta-estado tono="neutro" [texto]="servicioProductos.nombreCategoria(productoActual.categoriaId)" />
+        <app-etiqueta-estado [estado]="productoActual.estado" />
+      </div>
+      <h2 class="t-titular">{{ productoActual.nombre }}</h2>
+      <p class="t-titulo-2 detalle__precio">{{ productoActual.precio | euro }}</p>
+      <p class="detalle__descripcion">{{ productoActual.descripcion }}</p>
+      <hr class="separador" />
+
+      <dl class="datos-clave">
+        <div>
+          <dt class="t-etiqueta">Categoría</dt>
+          <dd>{{ servicioProductos.nombreCategoria(productoActual.categoriaId) }}</dd>
+        </div>
+        <div>
+          <dt class="t-etiqueta">Disponibilidad</dt>
+          <dd [class.esta-agotado]="productoActual.estado !== 'disponible'">{{ productoActual.estado === 'disponible' ? 'Disponible hoy' : 'Agotado hoy' }}</dd>
+        </div>
+      </dl>
+
+      <div class="campo">
+        <span class="t-etiqueta">Alérgenos</span>
+        <div class="fila">
+          @for (alergeno of productoActual.alergenos; track alergeno) {
+            <span class="insignia insignia--advertencia">{{ alergeno }}</span>
+          } @empty {
+            <span class="t-pequeno atenuado">Sin alérgenos declarados</span>
+          }
+        </div>
+      </div>
+
+      @if (productoActual.estado !== 'disponible') {
+        <app-aviso tono="peligro" titulo="Temporalmente agotado">
+          No puede añadirse al pedido. Pregunta al equipo o vuelve a consultar más tarde.
+        </app-aviso>
+        <button type="button" class="boton" disabled><app-icono nombre="bolsa-compra" /> No disponible</button>
+      } @else {
+        <button type="button" class="boton boton--primario" (click)="anadirAlPedido()">
+          <app-icono nombre="bolsa-compra" />
+          {{ autenticacion.rol() === 'cliente' ? 'Añadir al pedido' : 'Accede para pedir' }}
+        </button>
+        @if (mensajeAnadido(); as mensaje) {
+          <app-aviso tono="exito">{{ mensaje }} <a routerLink="/pedido">Ver mi pedido</a></app-aviso>
+        }
+      }
+    </article>
+  </div>
+} @else {
+  <app-aviso tono="advertencia" titulo="Producto no encontrado">
+    Puede que se haya retirado de la carta. <a routerLink="/carta">Volver a la carta</a>
+  </app-aviso>
+}

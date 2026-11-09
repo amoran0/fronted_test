@@ -1,0 +1,80 @@
+<app-cabecera-pagina titulo="Informes" subtitulo="Ventas del día">
+  <button type="button" class="boton boton--secundario" (click)="exportarInformeCsv()"><app-icono nombre="descargar" /> Exportar CSV</button>
+</app-cabecera-pagina>
+
+@if (metricas(); as metricasDia) {
+  <div class="indicadores">
+    <app-tarjeta-indicador [etiqueta]="'Ventas del día · ' + formatearFecha(metricasDia.fecha)" [valor]="formatearEuros(metricasDia.ventas)" pista="Solo pedidos entregados" />
+    <app-tarjeta-indicador etiqueta="Pedidos" [valor]="metricasDia.pedidos" [pista]="'+' + metricasDia.variacionPedidosAyer + ' pedidos vs. ayer'" />
+    <app-tarjeta-indicador etiqueta="Ticket medio" [valor]="formatearEuros(metricasDia.ticketMedio)" [pista]="'+' + formatearEuros(metricasDia.variacionTicketAyer) + ' vs. ayer'" />
+    <app-tarjeta-indicador etiqueta="Descuentos" [valor]="formatearEuros(metricasDia.descuentos)" [pista]="porcentajeDescuentos().toLocaleString('es-ES') + ' % sobre ventas'" />
+  </div>
+}
+
+<div class="distribucion">
+  <section class="tarjeta tarjeta--amplia pila">
+    <div class="tarjeta__cabecera">
+      <h2 class="t-titulo-3">Ventas por franja</h2>
+      <span class="insignia insignia--informacion">En directo</span>
+    </div>
+    <form class="filtro" (submit)="$event.preventDefault(); aplicarDia(campoDia.value)">
+      <label class="campo expandir">
+        <span class="t-etiqueta">Día</span>
+        <input #campoDia class="entrada" type="date" [value]="diaSeleccionado()" [max]="diaSeleccionado()" />
+      </label>
+      <button class="boton boton--primario" type="submit"><app-icono nombre="circulo-confirmacion" /> Aplicar</button>
+    </form>
+
+    <div class="grafico" role="img" [attr.aria-label]="'Ventas por franja horaria del ' + formatearFecha(diaSeleccionado())">
+      @for (franja of ventasPorFranja(); track franja.hora) {
+        <div class="grafico__columna">
+          <span class="grafico__valor">{{ franja.importe | euro }}</span>
+          <div class="grafico__barra" [class.es-maximo]="franja.importe === importeMaximoFranja()" [style.height.%]="(franja.importe / importeMaximoFranja()) * 100"></div>
+          <span class="grafico__etiqueta">{{ franja.hora }}</span>
+        </div>
+      }
+    </div>
+    @if (metricas(); as metricasDia) {
+      <p class="nota">Total del día: {{ metricasDia.ventas | euro }} · solo pedidos entregados</p>
+    }
+  </section>
+
+  <section class="tarjeta tarjeta--amplia pila">
+    <div>
+      <h2 class="t-titulo-3">Ranking de productos</h2>
+      <p class="t-pequeno atenuado">Por unidades · solo pedidos entregados</p>
+    </div>
+    <form class="filtro" (submit)="$event.preventDefault(); aplicarRango(campoDesde.value, campoHasta.value)">
+      <label class="campo expandir">
+        <span class="t-etiqueta">Desde</span>
+        <input #campoDesde class="entrada" type="date" [value]="rangoDesde()" />
+      </label>
+      <label class="campo expandir">
+        <span class="t-etiqueta">Hasta</span>
+        <input #campoHasta class="entrada" type="date" [value]="rangoHasta()" />
+      </label>
+      <button class="boton boton--primario" type="submit" aria-label="Aplicar rango"><app-icono nombre="circulo-confirmacion" /> Aplicar</button>
+    </form>
+
+    <ol class="ranking">
+      @for (productoRanking of rankingProductos(); track productoRanking.nombre) {
+        <li>
+          <span class="ranking__posicion t-titulo-3" [class.es-primero]="productoRanking.posicion === 1">{{ productoRanking.posicion }}</span>
+          <div class="expandir">
+            <div class="fila fila--separada">
+              <strong>{{ productoRanking.nombre }}</strong>
+              <strong class="tabular">{{ productoRanking.unidades }} uds.</strong>
+            </div>
+            <div class="fila fila--separada t-pequeno atenuado">
+              <span>{{ productoRanking.categoria }}</span>
+              <span class="tabular">{{ productoRanking.importe | euro }}</span>
+            </div>
+            <div class="ranking__carril">
+              <div class="ranking__relleno" [class.es-primero]="productoRanking.posicion === 1" [style.width.%]="(productoRanking.unidades / unidadesMaximasRanking()) * 100"></div>
+            </div>
+          </div>
+        </li>
+      }
+    </ol>
+  </section>
+</div>

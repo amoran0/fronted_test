@@ -1,0 +1,159 @@
+:host {
+  display: block;
+  background: var(--color-barra-lateral);
+  color: #fff;
+}
+
+.barra-lateral {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding: 30px 24px;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+.marca {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--color-acento);
+  font: 900 36px/0.95 var(--fuente-serif);
+  letter-spacing: 0.01em;
+  min-height: 165px;
+}
+.marca__linea {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.marca__simbolo {
+  border-radius: 50%;
+}
+
+.rol {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  font: 700 18px var(--fuente-sans);
+  color: var(--color-acento);
+}
+.rol__texto {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.rol__detalle {
+  font: 400 13px var(--fuente-sans);
+  color: var(--color-barra-lateral-suave);
+}
+
+.turno {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.turno .t-etiqueta {
+  color: var(--color-barra-lateral-suave);
+}
+.turno__caja {
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  border-radius: var(--radio-campo);
+  padding: 10px 12px;
+  font: 700 13px var(--fuente-sans);
+  border: 1px solid var(--color-borde);
+}
+
+.menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.menu__elemento {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 43px;
+  padding: 0 12px;
+  border-radius: var(--radio-campo);
+  color: #fff;
+  text-decoration: none;
+  font: 500 16px var(--fuente-sans);
+  transition: background-color 0.15s;
+}
+.menu__elemento:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.menu__elemento.esta-activo {
+  background: var(--color-acento);
+  color: var(--color-texto);
+}
+.menu__punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-barra-lateral-atenuado);
+}
+.menu__elemento.esta-activo .menu__punto {
+  background: #b0a097;
+}
+
+.local {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: var(--radio-campo);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+}
+.local__etiqueta {
+  color: var(--color-barra-lateral-atenuado);
+}
+.local__estado {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-barra-lateral-suave);
+}
+.local__punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-barra-lateral-suave);
+}
+.local__estado.esta-cerrado .local__punto {
+  background: var(--color-peligro);
+}
+
+.sesion {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: -18px;
+  padding: 0 12px;
+  font-size: 12px;
+  color: var(--color-barra-lateral-atenuado);
+}
+.sesion__salir {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: #fff;
+  font: 700 13px var(--fuente-sans);
+  cursor: pointer;
+}
+.sesion__salir:hover {
+  text-decoration: underline;
+}

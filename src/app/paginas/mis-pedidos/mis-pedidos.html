@@ -1,0 +1,80 @@
+<app-cabecera-pagina titulo="Mis pedidos" subtitulo="Solo tú puedes consultar el seguimiento y tu historial.">
+  <a class="boton boton--primario" routerLink="/carta"><app-icono nombre="mas" /> Nuevo pedido</a>
+</app-cabecera-pagina>
+
+@if (servicioPedidos.pedidoActivo(); as pedidoActivo) {
+  <article class="tarjeta tarjeta--amplia pila pedido-activo">
+    <div class="tarjeta__cabecera">
+      <div>
+        <span class="t-etiqueta">Pedido #{{ pedidoActivo.codigo }} · hoy, {{ formatearHora(pedidoActivo.fecha) }}</span>
+        <h2 class="t-titulo-1">Turno {{ pedidoActivo.turno }}</h2>
+      </div>
+      <app-etiqueta-estado [estado]="pedidoActivo.estado" [texto]="pedidoActivo.estado === 'listo' ? 'Listo para recoger' : undefined" />
+    </div>
+
+    @switch (pedidoActivo.estado) {
+      @case ('listo') {
+        <app-aviso tono="exito" titulo="Tu pedido está disponible">
+          Acércate al mostrador y enseña el turno {{ pedidoActivo.turno }}. Lo guardaremos durante 15 minutos.
+        </app-aviso>
+      }
+      @case ('en_preparacion') {
+        <app-aviso tono="informacion" titulo="Estamos preparando tu pedido">Te avisaremos en cuanto esté listo.</app-aviso>
+      }
+      @case ('pendiente') {
+        <app-aviso tono="informacion" titulo="Pedido recibido">Entrará en preparación en unos minutos.</app-aviso>
+      }
+    }
+
+    <ol class="progreso" aria-label="Estado del pedido">
+      @for (estado of flujoEstados; track estado; let indice = $index) {
+        <li [class.esta-completado]="indice <= indicePasoActual(pedidoActivo)" [class.es-actual]="indice === indicePasoActual(pedidoActivo)"
+          [attr.aria-current]="indice === indicePasoActual(pedidoActivo) ? 'step' : null">
+          <span class="progreso__barra"></span>
+          <span class="t-etiqueta">{{ etiquetaPorEstado[estado] }}</span>
+        </li>
+      }
+    </ol>
+    <hr class="separador" />
+
+    <div class="fila fila--separada">
+      <span>{{ resumenLineas(pedidoActivo.lineas) }}</span>
+      <div class="totales">
+        <span class="t-leyenda atenuado">
+          Subtotal {{ pedidoActivo.subtotal | euro }}
+          @if (pedidoActivo.descuento) {
+            · {{ pedidoActivo.descuento.tipo === 'socio' ? 'Socio' : 'Cupón' }} {{ formatearDescuento(pedidoActivo.descuento.importe) }}
+          }
+        </span>
+        <strong>Total {{ pedidoActivo.total | euro }}</strong>
+      </div>
+    </div>
+
+    @if (pedidoActivo.estado === 'pendiente') {
+      <button type="button" class="boton boton--secundario" (click)="cancelarPedido(pedidoActivo)">Cancelar pedido</button>
+    } @else {
+      <app-aviso tono="advertencia" titulo="Este pedido ya no se puede cancelar">
+        La preparación ha comenzado. Si necesitas ayuda, consulta al personal de barra.
+      </app-aviso>
+    }
+  </article>
+}
+
+<h2 class="solo-lector-pantalla">Historial</h2>
+<ul class="historial">
+  @for (pedidoAnterior of servicioPedidos.historial(); track pedidoAnterior.id) {
+    <li class="tarjeta pila">
+      <div class="fila fila--separada">
+        <strong>#{{ pedidoAnterior.codigo }} · {{ pedidoAnterior.turno }}</strong>
+        <app-etiqueta-estado [estado]="pedidoAnterior.estado" [tono]="pedidoAnterior.estado === 'entregado' ? 'informacion' : undefined" />
+      </div>
+      <span class="t-pequeno atenuado">{{ formatearFechaCorta(pedidoAnterior.fecha) }} · {{ formatearHora(pedidoAnterior.fecha) }}</span>
+      <span>{{ resumenLineas(pedidoAnterior.lineas) }}</span>
+      <strong class="t-titulo-3">{{ pedidoAnterior.total | euro }}</strong>
+    </li>
+  } @empty {
+    @if (!servicioPedidos.pedidoActivo()) {
+      <li class="tarjeta">Todavía no has hecho ningún pedido. <a routerLink="/carta">Ver la carta</a></li>
+    }
+  }
+</ul>

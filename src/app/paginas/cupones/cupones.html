@@ -1,0 +1,133 @@
+<app-cabecera-pagina titulo="Cupones" subtitulo="Crea promociones con vigencia y límites de uso.">
+  <a class="boton boton--secundario" routerLink="/admin/cupones/solicitudes"><app-icono nombre="vale" /> Solicitudes CineTown</a>
+  <button type="button" class="boton boton--primario" (click)="empezarCuponNuevo()"><app-icono nombre="mas" /> Crear cupón</button>
+</app-cabecera-pagina>
+
+<div class="indicadores">
+  <app-tarjeta-indicador etiqueta="Activos" [valor]="servicioCupones.activos()" />
+  <app-tarjeta-indicador etiqueta="Canjes este mes" [valor]="servicioCupones.canjesMes()" />
+  <app-tarjeta-indicador etiqueta="Descuento concedido" [valor]="formatearEuros(servicioCupones.descuentoConcedido())" />
+</div>
+
+<div class="distribucion">
+  <section class="tarjeta tarjeta--amplia">
+    <div class="cabecera-lista">
+      <h2 class="t-titulo-3">Campañas y validación</h2>
+      <div class="campo">
+        <span class="t-etiqueta">Buscar</span>
+        <app-campo-busqueda [(valor)]="textoBusqueda" textoIndicativo="Código…" />
+      </div>
+    </div>
+    <ul class="cupones">
+      @for (cupon of cuponesFiltrados(); track cupon.codigo) {
+        <li class="cupon">
+          <div class="expandir">
+            <strong>{{ cupon.codigo }}</strong>
+            <p class="t-pequeno atenuado">{{ cupon.descripcion }}</p>
+          </div>
+          <div class="cupon__datos">
+            <div class="cupon__fechas">
+              <span class="t-pequeno atenuado">{{ textoVigencia(cupon) }}</span>
+              <span class="t-pequeno tabular">{{ cupon.usos }} / {{ cupon.usosMax }}</span>
+            </div>
+            <app-etiqueta-estado [estado]="servicioCupones.estado(cupon)" [texto]="servicioCupones.estado(cupon) === 'agotado' ? 'Usos agotados' : undefined"
+              [tono]="servicioCupones.estado(cupon) === 'agotado' ? 'peligro' : undefined" />
+          </div>
+          <button type="button" class="boton boton--discreto boton--pequeno" (click)="editarCupon(cupon)" [attr.aria-label]="'Editar ' + cupon.codigo">Editar</button>
+        </li>
+      } @empty {
+        <li class="atenuado">No hay cupones con ese código.</li>
+      }
+    </ul>
+  </section>
+
+  <form id="nuevo-cupon" class="tarjeta tarjeta--amplia pila nuevo" [formGroup]="formulario" (ngSubmit)="guardarCupon()" novalidate>
+    <div class="fila fila--separada">
+      <h2 class="t-titulo-3">{{ codigoEnEdicion() ? 'Editar ' + codigoEnEdicion() : 'Nuevo cupón' }}</h2>
+      @if (codigoEnEdicion()) {
+        <button type="button" class="boton boton--discreto boton--pequeno" (click)="empezarCuponNuevo()">Cancelar</button>
+      }
+    </div>
+
+    <label class="campo">
+      <span class="t-etiqueta">Código</span>
+      <input class="entrada" formControlName="codigo" placeholder="TARDES15" [readonly]="!!codigoEnEdicion()" [class.es-invalido]="campoInvalido('codigo')" autocomplete="off" />
+      @if (campoInvalido('codigo')) {
+        <span class="error-campo">De 4 a 16 letras o números, sin espacios.</span>
+      }
+    </label>
+
+    <div class="rejilla-formulario columnas-3">
+      <label class="campo">
+        <span class="t-etiqueta">Descuento</span>
+        <input class="entrada" type="number" min="1" formControlName="valor" />
+      </label>
+      <label class="campo">
+        <span class="t-etiqueta">Tipo</span>
+        <select class="selector" formControlName="tipo">
+          <option value="porcentaje">%</option>
+          <option value="fijo">€</option>
+        </select>
+      </label>
+      <label class="campo">
+        <span class="t-etiqueta">Usos máx.</span>
+        <input class="entrada" type="number" min="1" formControlName="usosMax" />
+      </label>
+    </div>
+
+    <div class="rejilla-formulario columnas-2">
+      <label class="campo">
+        <span class="t-etiqueta">Desde</span>
+        <input class="entrada" type="date" formControlName="desde" />
+      </label>
+      <label class="campo">
+        <span class="t-etiqueta">Hasta</span>
+        <input class="entrada" type="date" formControlName="hasta" [class.es-invalido]="formulario.hasError('fechas')" />
+      </label>
+    </div>
+    @if (formulario.hasError('fechas')) {
+      <span class="error-campo">La fecha final no puede ser anterior a la inicial.</span>
+    }
+
+    <label class="campo">
+      <span class="t-etiqueta">Destinatario</span>
+      <select class="selector" formControlName="destinatario">
+        <option value="publico">Público · cualquier cliente</option>
+        <option value="personal">Personal · un único cliente</option>
+      </select>
+    </label>
+
+    <div class="rejilla-formulario columnas-2">
+      <label class="campo">
+        <span class="t-etiqueta">Mínimo compra (€)</span>
+        <input class="entrada" type="number" min="0" step="0.5" formControlName="minimoCompra" />
+      </label>
+      <label class="campo">
+        <span class="t-etiqueta">Estado</span>
+        <select class="selector" formControlName="activo">
+          <option [ngValue]="true">Activo</option>
+          <option [ngValue]="false">Inactivo</option>
+        </select>
+      </label>
+    </div>
+
+    <label class="campo">
+      <span class="t-etiqueta">Email personal {{ formulario.controls.destinatario.value === 'personal' ? '' : '(opcional)' }}</span>
+      <input class="entrada" type="email" formControlName="email" placeholder="cliente@ejemplo.com"
+        [class.es-invalido]="campoInvalido('email') || (formulario.hasError('emailRequerido') && formulario.controls.email.touched)" />
+      @if (formulario.hasError('emailRequerido') && formulario.controls.email.touched) {
+        <span class="error-campo">Un cupón personal necesita el email del cliente.</span>
+      }
+    </label>
+
+    @if (error(); as mensajeError) {
+      <app-aviso tono="peligro">{{ mensajeError }}</app-aviso>
+    } @else if (mensaje(); as mensajeExito) {
+      <app-aviso tono="exito" titulo="Cupón guardado">{{ mensajeExito }}</app-aviso>
+    } @else if (formularioValido()) {
+      <app-aviso tono="informacion" titulo="Validación correcta">Código y fechas válidas.</app-aviso>
+    }
+
+    <button type="submit" class="boton boton--primario"><app-icono nombre="circulo-confirmacion" /> Guardar cupón</button>
+  </form>
+</div>

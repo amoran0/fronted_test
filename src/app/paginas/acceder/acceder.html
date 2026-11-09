@@ -1,0 +1,50 @@
+<app-cabecera-pagina titulo="Acceder" subtitulo="Inicia sesión para hacer pedidos o gestionar la cafetería." />
+
+<div class="acceso">
+  <form class="tarjeta tarjeta--amplia pila" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+    <h2 class="t-titulo-3">Iniciar sesión</h2>
+
+    <label class="campo">
+      <span class="t-etiqueta">Email</span>
+      <input class="entrada" type="email" formControlName="email" autocomplete="email"
+        [class.es-invalido]="formulario.controls.email.touched && formulario.controls.email.invalid" />
+      @if (formulario.controls.email.touched && formulario.controls.email.invalid) {
+        <span class="error-campo">Introduce un email válido.</span>
+      }
+    </label>
+
+    <label class="campo">
+      <span class="t-etiqueta">Contraseña</span>
+      <input class="entrada" type="password" formControlName="contrasena" autocomplete="current-password"
+        [class.es-invalido]="formulario.controls.contrasena.touched && formulario.controls.contrasena.invalid" />
+      @if (formulario.controls.contrasena.touched && formulario.controls.contrasena.invalid) {
+        <span class="error-campo">Mínimo 6 caracteres.</span>
+      }
+    </label>
+
+    @if (error(); as mensajeError) {
+      <app-aviso tono="peligro" titulo="No se ha podido entrar">{{ mensajeError }}</app-aviso>
+    }
+
+    <button class="boton boton--primario" type="submit" [disabled]="enviando()">
+      <app-icono nombre="iniciar-sesion" /> {{ enviando() ? 'Entrando…' : 'Entrar' }}
+    </button>
+  </form>
+
+  @if (usuariosDemostracion.length) {
+    <aside class="tarjeta tarjeta--amplia pila">
+      <h2 class="t-titulo-3">Accesos de demostración</h2>
+      <p class="t-pequeno atenuado">Datos de ejemplo. Contraseña: <strong>demo1234</strong></p>
+      @for (usuarioDemo of usuariosDemostracion; track usuarioDemo.id) {
+        <button type="button" class="demo" (click)="entrarComo(usuarioDemo.email, usuarioDemo.contrasena)">
+          <span class="insignia insignia--acento">{{ etiquetaPorRol[usuarioDemo.rol] }}</span>
+          <span class="expandir">
+            <strong>{{ usuarioDemo.nombre }}</strong>
+            <span class="t-pequeno atenuado">{{ usuarioDemo.email }}</span>
+          </span>
+          <app-icono nombre="flecha-derecha" />
+        </button>
+      }
+    </aside>
+  }
+</div>

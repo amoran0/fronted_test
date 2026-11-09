@@ -1,0 +1,116 @@
+<app-cabecera-pagina titulo="Descuento y confirmación" subtitulo="Aplica la ventaja más alta disponible y confirma tu pedido.">
+  <app-etiqueta-estado tono="informacion" texto="Paso 2 de 2" />
+</app-cabecera-pagina>
+
+@if (!servicioCarrito.puedeContinuar()) {
+  <app-aviso tono="advertencia" titulo="Revisa tu pedido">
+    Tu pedido está vacío o tiene productos agotados. <a routerLink="/pedido">Volver al paso 1</a>
+  </app-aviso>
+} @else {
+  <div class="distribucion">
+    <div class="pila">
+      <!-- Cupón -->
+      <section class="tarjeta tarjeta--amplia pila">
+        <div class="tarjeta__cabecera">
+          <div>
+            <h2 class="t-titulo-3">Cupón</h2>
+            <p class="t-pequeno atenuado">Código válido, activo, vigente y con usos disponibles.</p>
+          </div>
+          <app-etiqueta-estado [tono]="cuponAplicado() ? 'exito' : 'peligro'" [texto]="cuponAplicado() ? 'Aplicado' : 'No aplicado'" />
+        </div>
+        <form class="campo" (submit)="$event.preventDefault(); aplicarCupon()">
+          <label class="t-etiqueta" for="cupon">Código de cupón</label>
+          <div class="fila">
+            <div class="entrada-con-icono expandir">
+              <app-icono nombre="vale" [tamano]="15" />
+              <input id="cupon" class="entrada" [class.es-invalido]="errorCupon()" [value]="codigoCuponEscrito()"
+                (input)="codigoCuponEscrito.set($any($event.target).value)" placeholder="Ej.: CAFE10" autocomplete="off" />
+            </div>
+            @if (cuponAplicado()) {
+              <button type="button" class="boton boton--discreto" (click)="quitarCupon()">Quitar</button>
+            } @else {
+              <button type="submit" class="boton boton--discreto">Aplicar</button>
+            }
+          </div>
+        </form>
+        @if (errorCupon(); as mensajeErrorCupon) {
+          <app-aviso tono="peligro" titulo="No se puede aplicar el cupón">{{ mensajeErrorCupon }}</app-aviso>
+        }
+        <p class="t-pequeno atenuado">Comprueba también el mínimo de compra y el email si el cupón es personal.</p>
+      </section>
+
+      <!-- Socio FitZone -->
+      <section class="tarjeta tarjeta--amplia pila">
+        <div class="tarjeta__cabecera">
+          <div>
+            <h2 class="t-titulo-3">Socio FitZone</h2>
+            <p class="t-pequeno atenuado">Los socios del gimnasio FitZone tienen un 10 % de descuento.</p>
+          </div>
+          @if (servicioCarrito.dniSocio()) {
+            <app-etiqueta-estado tono="exito" texto="Activo · validado" />
+          }
+        </div>
+        <form class="campo" (submit)="$event.preventDefault(); validarSocio()">
+          <label class="t-etiqueta" for="dni">DNI de socio</label>
+          <div class="fila">
+            <div class="entrada-con-icono expandir">
+              <app-icono nombre="tarjeta-identidad" [tamano]="15" />
+              <input id="dni" class="entrada" [class.es-invalido]="errorDni()" [value]="dniEscrito()"
+                (input)="dniEscrito.set($any($event.target).value)" placeholder="12345678Z" maxlength="9" autocomplete="off" />
+            </div>
+            <button type="submit" class="boton boton--primario">Validar</button>
+          </div>
+        </form>
+        @if (errorDni(); as mensajeErrorDni) {
+          <app-aviso tono="peligro">{{ mensajeErrorDni }}</app-aviso>
+        }
+      </section>
+
+      <app-aviso tono="informacion" titulo="Solo se aplica la ventaja mayor">
+        Se aplica el mayor descuento entre cupón y socio, nunca se suman. El total nunca será negativo.
+      </app-aviso>
+    </div>
+
+    <aside class="tarjeta tarjeta--amplia pila resumen">
+      <h2 class="t-titulo-3">Resumen del pedido</h2>
+      <div class="fila fila--separada t-pequeno">
+        <span class="atenuado">{{ servicioCarrito.unidades() }} productos</span>
+        <strong>{{ servicioCarrito.subtotal() | euro }}</strong>
+      </div>
+      @if (servicioCarrito.descuento(); as descuentoAplicado) {
+        <div class="fila fila--separada t-pequeno">
+          <span class="atenuado">{{ descuentoAplicado.etiqueta }}</span>
+          <strong class="descuento">{{ formatearDescuento(descuentoAplicado.importe) }}</strong>
+        </div>
+      }
+      <hr class="separador" />
+      <div class="fila fila--separada t-pequeno">
+        <span class="atenuado">Base imponible</span>
+        <strong>{{ servicioCarrito.desglose().base | euro }}</strong>
+      </div>
+      <div class="fila fila--separada t-pequeno">
+        <span class="atenuado">IVA 21 %</span>
+        <strong>{{ servicioCarrito.desglose().iva | euro }}</strong>
+      </div>
+      <div class="fila fila--separada total">
+        <strong class="t-cuerpo-grande">Total</strong>
+        <strong class="t-titulo-1 tabular">{{ servicioCarrito.total() | euro }}</strong>
+      </div>
+
+      @if (servicioCarrito.descuento(); as descuentoAplicado) {
+        <app-aviso tono="exito" [titulo]="ganaDescuentoSocio() ? 'Socio FitZone validado' : 'Cupón aplicado'">
+          {{
+            ganaDescuentoSocio()
+              ? 'DNI ' + servicioCarrito.dniSocio() + ' · descuento 10 % aplicado automáticamente.'
+              : descuentoAplicado.etiqueta + ' · ' + formatearDescuento(descuentoAplicado.importe)
+          }}
+        </app-aviso>
+      }
+
+      <button type="button" class="boton boton--primario" [disabled]="enviando()" (click)="confirmarPedido()">
+        <app-icono nombre="circulo-confirmacion" /> {{ enviando() ? 'Confirmando…' : 'Confirmar pedido' }}
+      </button>
+      <p class="t-pequeno atenuado">Al confirmar recibirás un número de turno diario y podrás seguir el estado en tiempo real.</p>
+    </aside>
+  </div>
+}

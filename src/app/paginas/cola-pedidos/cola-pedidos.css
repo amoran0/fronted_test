@@ -1,0 +1,40 @@
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.cola {
+  list-style: none;
+  margin: 18px 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.pedido {
+  gap: 10px;
+}
+.retrasado {
+  color: var(--color-peligro);
+}
+.etiquetas {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.acciones {
+  margin-top: auto;
+  padding-top: 6px;
+  gap: 8px;
+}
+.flujo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+@media (max-width: 1100px) {
+  .indicadores {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

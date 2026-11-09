@@ -1,0 +1,87 @@
+<app-cabecera-pagina titulo="Realiza tu pedido">
+  <a class="boton boton--secundario" routerLink="/carta"><app-icono nombre="mas" /> Añadir productos</a>
+</app-cabecera-pagina>
+
+<div class="distribucion">
+  <section class="tarjeta tarjeta--amplia">
+    <div class="tarjeta__cabecera">
+      <h2 class="t-titulo">Tu selección</h2>
+      <span class="insignia insignia--neutro">{{ servicioCarrito.lineas().length }} de {{ maximoLineas }} líneas · mín. 1</span>
+    </div>
+
+    @for (linea of servicioCarrito.lineas(); track linea.producto.id + linea.opciones.join(); let indiceLinea = $index) {
+      @let productoNoDisponible = linea.producto.estado !== 'disponible';
+      <div class="linea" [class.esta-agotado]="productoNoDisponible">
+        <span class="linea__miniatura" [style.background-image]="linea.producto.imagen ? 'url(' + linea.producto.imagen + ')' : null"></span>
+        <div class="linea__informacion expandir">
+          <div class="fila">
+            <strong>{{ linea.producto.nombre }}</strong>
+            @if (productoNoDisponible) {
+              <app-etiqueta-estado estado="agotado" />
+            }
+          </div>
+          <span class="t-pequeno atenuado">
+            {{ linea.opciones.join(' · ') || 'Sin cambios' }} · {{ linea.precioUnitario | euro }}/u{{ productoNoDisponible ? ' (precio bloqueado)' : '' }}
+          </span>
+        </div>
+        <app-selector-cantidad
+          [valor]="linea.cantidad"
+          (valorChange)="servicioCarrito.cambiarCantidad(indiceLinea, $event)"
+          [maximo]="maximoUnidadesPorLinea"
+          [deshabilitado]="productoNoDisponible"
+          [etiqueta]="linea.producto.nombre"
+        />
+        <strong class="linea__total tabular">{{ totalLinea(linea) | euro }}</strong>
+        <button type="button" class="linea__quitar" [class.es-peligroso]="productoNoDisponible" (click)="servicioCarrito.quitar(indiceLinea)" [attr.aria-label]="'Quitar ' + linea.producto.nombre">
+          <app-icono nombre="cerrar" [tamano]="14" />
+        </button>
+      </div>
+      @if (productoNoDisponible) {
+        <app-aviso tono="peligro" [titulo]="'No se puede pedir ' + linea.producto.nombre">
+          Producto agotado. Retira esta línea; el resto del pedido sigue guardado.
+        </app-aviso>
+      }
+    } @empty {
+      <div class="vacio">
+        <p class="atenuado">Tu pedido está vacío.</p>
+        <a class="boton boton--primario" routerLink="/carta">Ver la carta</a>
+      </div>
+    }
+
+    @if (servicioCarrito.lineas().length) {
+      <span class="insignia insignia--exito guardado">Guardado</span>
+    }
+  </section>
+
+  <aside class="tarjeta tarjeta--amplia resumen pila">
+    <h2 class="t-titulo">Resumen</h2>
+    <div class="fila fila--separada t-pequeno">
+      <span class="atenuado">Productos válidos · {{ servicioCarrito.validas().length }} líneas</span>
+      <strong>{{ servicioCarrito.subtotal() | euro }}</strong>
+    </div>
+    <div class="fila fila--separada t-pequeno">
+      <span class="atenuado">Descuento</span>
+      <span class="atenuado" title="Se aplica en el paso 2">—</span>
+    </div>
+    <hr class="separador" />
+    <div class="fila fila--separada total">
+      <div>
+        <strong class="t-titulo-pequeno">Subtotal</strong>
+        <p class="t-leyenda atenuado">IVA 21 % incluido</p>
+      </div>
+      <strong class="t-titulo-1 tabular">{{ servicioCarrito.subtotal() | euro }}</strong>
+    </div>
+
+    @if (servicioCarrito.invalidas().length; as lineasPorCorregir) {
+      <app-aviso tono="advertencia" [titulo]="'Corrige ' + lineasPorCorregir + (lineasPorCorregir === 1 ? ' línea' : ' líneas')">
+        Retira {{ servicioCarrito.invalidas()[0].producto.nombre }} para poder continuar al descuento y confirmación.
+      </app-aviso>
+    }
+
+    @if (servicioCarrito.puedeContinuar()) {
+      <a class="boton boton--primario" routerLink="/pedido/confirmar"><app-icono nombre="flecha-derecha" /> Continuar</a>
+    } @else {
+      <button type="button" class="boton" disabled><app-icono nombre="flecha-derecha" /> Continuar</button>
+    }
+  </aside>
+</div>
