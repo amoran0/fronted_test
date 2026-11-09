@@ -7,7 +7,7 @@ import { Icon } from '../icon/icon';
 import { Sidebar } from '../sidebar/sidebar';
 
 /**
- * Estructura común de todas las vistas: barra lateral + contenido + pie a todo el ancho.
+ * Estructura común de todas las vistas: barra lateral a toda la altura + contenido con su pie debajo.
  * En pantallas estrechas la barra lateral se oculta y se abre con un botón.
  */
 @Component({
@@ -29,25 +29,29 @@ import { Sidebar } from '../sidebar/sidebar';
       </button>
       <app-sidebar id="menu-lateral" class="shell__nav" />
       <div class="shell__backdrop" (click)="menuAbierto.set(false)"></div>
-      <main class="shell__main" id="contenido">
-        <router-outlet />
-      </main>
-      <app-footer class="shell__footer" />
+      <div class="shell__content">
+        <main class="shell__main" id="contenido">
+          <router-outlet />
+        </main>
+        <app-footer />
+      </div>
     </div>
   `,
   styles: `
     .shell {
       display: grid;
       grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
-      grid-template-rows: 1fr auto;
       min-height: 100vh;
     }
-    .shell__main {
-      padding: 34px 40px 48px;
+    .shell__content {
+      display: flex;
+      flex-direction: column;
       min-width: 0;
     }
-    .shell__footer {
-      grid-column: 1 / -1;
+    .shell__main {
+      flex: 1 0 auto;
+      padding: 34px 40px 36px;
+      min-width: 0;
     }
     .shell__toggle,
     .shell__backdrop {

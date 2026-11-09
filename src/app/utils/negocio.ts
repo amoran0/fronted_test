@@ -4,6 +4,7 @@ export const NEGOCIO = {
   lema: 'Café de especialidad',
   local: 'CoffeeStation Centro',
   direccion: 'C/ Mayor 12, 41001 Sevilla',
+  ciudad: 'Sevilla',
   telefono: '+34 954 000 000',
   email: 'hola@thecoffeeroom.es',
   apertura: { desde: '08:00', hasta: '20:30' },

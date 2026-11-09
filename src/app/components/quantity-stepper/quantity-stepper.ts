@@ -22,7 +22,7 @@ import { Icon } from '../icon/icon';
   `,
   styles: `
     .qs { display: flex; align-items: center; gap: 8px; }
-    .qs__btn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--c-border); background: var(--c-surface); display: grid; place-items: center; cursor: pointer; }
+    .qs__btn { width: 42px; height: 42px; border-radius: var(--r-btn); border: 1px solid var(--c-border); background: var(--c-surface); display: grid; place-items: center; cursor: pointer; }
     .qs__btn:hover:not(:disabled) { border-color: var(--c-muted); }
     .qs__btn:disabled { color: var(--c-disabled-fg); cursor: not-allowed; opacity: .6; }
     .qs__value { width: 40px; display: flex; flex-direction: column; align-items: center; font-size: 13px; }

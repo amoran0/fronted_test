@@ -53,7 +53,7 @@
           <p class="t-small muted">{{ productos.nombreCategoria(p.categoriaId) }}</p>
         </div>
         <span class="t-small muted item__note">{{ p.nota }}</span>
-        <app-status-badge [estado]="p.estado" />
+        <app-status-badge [estado]="p.estado" [tono]="p.estado === 'retirado' ? 'neutral' : undefined" />
         @switch (p.estado) {
           @case ('disponible') {
             <button type="button" class="btn btn--secondary item__btn" (click)="cambiar(p, 'agotado')">Marcar agotado</button>

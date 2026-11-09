@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   gap: 30px;
-  padding: 24px;
+  padding: 30px 24px;
   max-height: 100vh;
   overflow-y: auto;
 }
@@ -22,7 +22,7 @@
   color: var(--c-accent);
   font: 900 36px/0.95 var(--f-serif);
   letter-spacing: 0.01em;
-  margin-bottom: 26px;
+  min-height: 165px;
 }
 .brand__line {
   display: flex;
@@ -36,20 +36,28 @@
 .role {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 8px;
+  gap: 8px;
+  padding: 10px 12px;
   font: 700 18px var(--f-sans);
   color: var(--c-accent);
+}
+.role__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.role__sub {
+  font: 400 13px var(--f-sans);
+  color: var(--c-sidebar-soft);
 }
 
 .turno {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: -12px;
+  gap: 6px;
 }
 .turno .t-label {
-  color: var(--c-sidebar-muted);
+  color: var(--c-sidebar-soft);
 }
 .turno__box {
   background: var(--c-surface);
@@ -57,6 +65,7 @@
   border-radius: var(--r-field);
   padding: 10px 12px;
   font: 700 13px var(--f-sans);
+  border: 1px solid var(--c-border);
 }
 
 .menu {
@@ -85,23 +94,22 @@
 .menu__item.is-active {
   background: var(--c-accent);
   color: var(--c-text);
-  font-weight: 700;
 }
 .menu__dot {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--c-sidebar-muted);
 }
 .menu__item.is-active .menu__dot {
-  background: var(--c-muted);
+  background: #b0a097;
 }
 
 .location {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 14px 12px;
+  padding: 14px;
   border-radius: var(--r-field);
   background: rgba(255, 255, 255, 0.05);
   font-size: 13px;
@@ -114,13 +122,13 @@
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: var(--c-sidebar-muted);
+  color: var(--c-sidebar-soft);
 }
 .location__dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #dceadf;
+  background: var(--c-sidebar-soft);
 }
 .location__status.is-closed .location__dot {
   background: var(--c-danger);
@@ -130,7 +138,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-top: -14px;
+  margin-top: -18px;
   padding: 0 12px;
   font-size: 12px;
   color: var(--c-sidebar-muted);

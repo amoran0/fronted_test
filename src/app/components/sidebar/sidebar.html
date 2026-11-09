@@ -1,13 +1,18 @@
 <nav class="sidebar" aria-label="Navegación principal">
   <a class="brand" routerLink="/carta" aria-label="The Coffee Room, ir a la carta">
-    <span class="brand__line">THE <img class="brand__mark" src="logo-cup.svg" alt="" width="36" height="36" /></span>
+    <span class="brand__line">THE <img class="brand__mark" src="logo-cup.svg" alt="" width="34" height="34" /></span>
     <span class="brand__line">COFFEE</span>
     <span class="brand__line">ROOM</span>
   </a>
 
   <div class="role">
-    <app-icon [name]="config().icono" [size]="15" />
-    <span>{{ auth.usuario()?.nombre ?? config().etiqueta }}</span>
+    <app-icon [name]="config().icono" [size]="16" [stroke]="1.5" />
+    <div class="role__text">
+      <span>{{ auth.usuario()?.nombre ?? config().etiqueta }}</span>
+      @if (auth.usuario()) {
+        <span class="role__sub">{{ config().etiqueta }}</span>
+      }
+    </div>
   </div>
 
   @if (auth.rol() === 'barista') {

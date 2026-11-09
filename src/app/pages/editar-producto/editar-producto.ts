@@ -29,6 +29,7 @@ export class EditarProductoPage {
   protected readonly producto = computed(() => this.productos.porId(this.id()));
   protected readonly confirmarRetirada = signal(false);
   protected readonly guardado = signal(false);
+  protected readonly alergenosAbierto = signal(false);
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
     nombre: ['', [Validators.required, Validators.maxLength(60)]],
@@ -64,6 +65,12 @@ export class EditarProductoPage {
     const c = this.form.controls.alergenos;
     c.setValue(this.tieneAlergeno(a) ? c.value.filter((x) => x !== a) : [...c.value, a]);
     c.markAsDirty();
+  }
+
+  /** Cierra el desplegable de alérgenos cuando el foco sale de él. */
+  protected cerrarAlergenos(e: FocusEvent): void {
+    const actual = e.currentTarget as HTMLElement;
+    if (!actual.contains(e.relatedTarget as Node | null)) this.alergenosAbierto.set(false);
   }
 
   protected guardar(): void {

@@ -1,6 +1,7 @@
 import { DescuentoAplicado, LineaPedido } from '../models/pedido';
 
-export const IVA_HOSTELERIA = 0.1;
+/** Tipo de IVA aplicado a los precios (21 %). */
+export const IVA = 0.21;
 
 /** Redondea a céntimos evitando errores de coma flotante. */
 export function redondear(valor: number): number {
@@ -16,7 +17,7 @@ export function calcularSubtotal(lineas: Pick<LineaPedido, 'cantidad' | 'precioU
 }
 
 /** Los precios llevan IVA incluido: se separa la base imponible y la cuota. */
-export function desglosarIva(totalConIva: number, tipo = IVA_HOSTELERIA) {
+export function desglosarIva(totalConIva: number, tipo = IVA) {
   const base = redondear(totalConIva / (1 + tipo));
   return { base, iva: redondear(totalConIva - base) };
 }

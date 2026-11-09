@@ -22,13 +22,15 @@ export interface Producto {
   id: string;
   nombre: string;
   descripcion: string;
-  /** Precio final con IVA (10 %) incluido. */
+  /** Precio final con IVA (21 %) incluido. */
   precio: number;
   categoriaId: string;
   alergenos: Alergeno[];
   estado: EstadoProducto;
   /** Ruta relativa a /public, p. ej. `img/flat-white.jpg`. */
   imagen?: string;
+  /** Foto vertical opcional para la ficha de detalle (si no hay, se usa `imagen`). */
+  imagenDetalle?: string;
   /** Motivo visible para el barista cuando no está disponible. */
   nota?: string;
 }

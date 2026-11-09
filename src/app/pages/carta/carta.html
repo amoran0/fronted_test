@@ -29,8 +29,8 @@
     </div>
     <label class="field grow">
       <span class="t-label">Excluir alérgeno</span>
-      <select class="select" (change)="sinAlergeno.set($any($event.target).value)">
-        <option value="">Ninguno</option>
+      <select class="select" [class.is-placeholder]="!sinAlergeno()" (change)="sinAlergeno.set($any($event.target).value)">
+        <option value="">Ej.: Gluten, Leche, Sésamo…</option>
         @for (a of alergenos; track a) {
           <option [value]="a" [selected]="a === sinAlergeno()">{{ a }}</option>
         }

@@ -7,33 +7,72 @@
   resize: vertical;
 }
 .allergens {
-  border: 0;
-  margin: 0;
-  padding: 0;
-}
-.allergens legend {
-  padding: 0;
-  margin-bottom: 7px;
+  position: relative;
 }
 .allergens__box {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  min-height: 42px;
   align-items: center;
-  padding: 6px 10px;
+  gap: 8px;
+  min-height: 42px;
+  padding: 4px 4px 4px 12px;
   border: 1px solid var(--c-border);
   border-radius: var(--r-field);
   background: var(--c-surface);
 }
-.allergens__box .badge {
+.allergens__box.is-open {
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px rgba(116, 48, 20, 0.12);
+}
+.allergens__chips {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.allergens__chips .badge {
   border: 0;
   cursor: pointer;
 }
-.allergens__box .is-off {
-  background: transparent;
+.allergens__empty {
   color: var(--c-disabled-fg);
-  outline: 1px dashed var(--c-border);
+}
+.allergens__toggle {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--r-field);
+  background: transparent;
+  cursor: pointer;
+}
+.allergens__menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-field);
+  box-shadow: var(--shadow-card);
+}
+.allergens__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: var(--r-field);
+  cursor: pointer;
+}
+.allergens__option:hover {
+  background: var(--c-page);
+}
+.allergens__option input {
+  accent-color: var(--c-primary);
 }
 .retire {
   margin-top: 14px;

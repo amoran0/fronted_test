@@ -5,7 +5,7 @@
 <div class="layout">
   <section class="card card--roomy">
     <div class="card__head">
-      <h2 class="t-h3">Tu selección</h2>
+      <h2 class="t-title">Tu selección</h2>
       <span class="badge badge--neutral">{{ carrito.lineas().length }} de {{ maxLineas }} líneas · mín. 1</span>
     </div>
 
@@ -54,20 +54,20 @@
   </section>
 
   <aside class="card card--roomy summary stack">
-    <h2 class="t-h3">Resumen</h2>
+    <h2 class="t-title">Resumen</h2>
     <div class="row row--between t-small">
       <span class="muted">Productos válidos · {{ carrito.validas().length }} líneas</span>
       <strong>{{ carrito.subtotal() | euro }}</strong>
     </div>
     <div class="row row--between t-small">
       <span class="muted">Descuento</span>
-      <span>Se aplica en el paso 2</span>
+      <span class="muted" title="Se aplica en el paso 2">—</span>
     </div>
     <hr class="divider" />
     <div class="row row--between total">
       <div>
-        <strong class="t-body-l">Subtotal</strong>
-        <p class="t-caption muted">IVA 10 % incluido</p>
+        <strong class="t-title-s">Subtotal</strong>
+        <p class="t-caption muted">IVA 21 % incluido</p>
       </div>
       <strong class="t-h1 tabular">{{ carrito.subtotal() | euro }}</strong>
     </div>
@@ -75,7 +75,6 @@
     @if (carrito.invalidas().length; as n) {
       <app-alert tone="warning" [title]="'Corrige ' + n + (n === 1 ? ' línea' : ' líneas')">
         Retira {{ carrito.invalidas()[0].producto.nombre }} para poder continuar al descuento y confirmación.
-        <button alert-action type="button" class="link-btn" (click)="carrito.quitarInvalidas()">Retirar</button>
       </app-alert>
     }
 

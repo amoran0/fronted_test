@@ -15,6 +15,9 @@
   opacity: 0.75;
   border-bottom: 0;
 }
+.line.is-out .line__thumb {
+  background-color: var(--c-danger-bg);
+}
 .line__thumb {
   flex: none;
   width: 46px;

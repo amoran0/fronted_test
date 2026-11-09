@@ -36,6 +36,8 @@ export class CuponesPage {
   protected readonly texto = signal('');
   protected readonly mensaje = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
+  /** Código del cupón que se está editando; `null` al crear uno nuevo. */
+  protected readonly editando = signal<string | null>(null);
 
   protected readonly lista = computed(() => {
     const q = this.texto().trim().toUpperCase();
@@ -65,6 +67,41 @@ export class CuponesPage {
     return c.desde > hoyIso() ? `${formatFechaCorta(c.desde)} — ${formatFechaCorta(c.hasta)}` : `Hasta ${formatFechaCorta(c.hasta)}`;
   }
 
+  /** Carga un cupón existente en el formulario para modificarlo. */
+  protected editar(c: Cupon): void {
+    this.mensaje.set(null);
+    this.error.set(null);
+    this.editando.set(c.codigo);
+    this.form.reset({
+      codigo: c.codigo,
+      valor: c.valor,
+      tipo: c.tipo,
+      usosMax: c.usosMax,
+      desde: c.desde,
+      hasta: c.hasta ?? '',
+      destinatario: c.email ? 'personal' : 'publico',
+      minimoCompra: c.minimoCompra,
+      activo: c.activo,
+      email: c.email ?? '',
+    });
+    this.irAlFormulario();
+  }
+
+  protected nuevo(): void {
+    this.mensaje.set(null);
+    this.error.set(null);
+    this.editando.set(null);
+    this.form.reset();
+    this.irAlFormulario();
+  }
+
+  /** Lleva el formulario a la vista (en pantallas estrechas queda debajo de la lista). */
+  private irAlFormulario(): void {
+    const f = document.getElementById('nuevo-cupon');
+    f?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    f?.querySelector<HTMLInputElement>('input:not([readonly])')?.focus({ preventScroll: true });
+  }
+
   protected crear(): void {
     this.mensaje.set(null);
     this.error.set(null);
@@ -82,15 +119,17 @@ export class CuponesPage {
       descripcion: `${v.tipo === 'porcentaje' ? v.valor + ' %' : formatEuro(v.valor)} · ${destino}${v.minimoCompra ? ' · mín. ' + formatEuro(v.minimoCompra) : ''}`,
       desde: v.desde,
       hasta: v.hasta || null,
-      usos: 0,
+      usos: this.editando() ? (this.cupones.buscar(codigo)?.usos ?? 0) : 0,
       usosMax: v.usosMax,
       minimoCompra: v.minimoCompra,
       email: v.destinatario === 'personal' ? v.email : undefined,
       activo: v.activo,
     };
-    this.cupones.crear(cupon).subscribe({
+    const editando = !!this.editando();
+    (editando ? this.cupones.actualizar(cupon) : this.cupones.crear(cupon)).subscribe({
       next: () => {
-        this.mensaje.set(`Cupón ${codigo} creado.`);
+        this.mensaje.set(`Cupón ${codigo} ${editando ? 'actualizado' : 'creado'}.`);
+        this.editando.set(null);
         this.form.reset();
       },
       error: (e: Error) => this.error.set(e.message),

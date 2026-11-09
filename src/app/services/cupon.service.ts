@@ -46,6 +46,16 @@ export class CuponService {
       .pipe(tap((c) => this._cupones.update((l) => [c, ...l])));
   }
 
+  /** Guarda los cambios de un cupón existente (conserva sus usos). */
+  actualizar(cupon: Cupon): Observable<Cupon> {
+    return this.api
+      .put<Cupon>(`/cupones/${cupon.codigo}`, cupon, () => {
+        if (!this.buscar(cupon.codigo)) throw new Error(`No existe el cupón ${cupon.codigo}.`);
+        return cupon;
+      })
+      .pipe(tap((c) => this._cupones.update((l) => l.map((x) => (x.codigo === c.codigo ? c : x)))));
+  }
+
   /** Cupón personal de importe fijo generado a petición de CineTown. */
   generarParaSolicitud(s: SolicitudCineTown): Observable<Cupon> {
     return this.crear({

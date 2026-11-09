@@ -5,10 +5,10 @@
 @if (producto(); as p) {
   <div class="detail">
     <div class="detail__photo">
-      @if (p.imagen && !sinImagen()) {
-        <img [src]="p.imagen" [alt]="p.nombre" (error)="sinImagen.set(true)" />
+      @if ((p.imagenDetalle ?? p.imagen) && !sinImagen()) {
+        <img [src]="p.imagenDetalle ?? p.imagen" [alt]="p.nombre" (error)="sinImagen.set(true)" />
       } @else {
-        <div class="detail__placeholder"><app-icon name="coffee" [size]="56" [stroke]="1.2" /></div>
+        <div class="detail__placeholder"></div>
       }
     </div>
 

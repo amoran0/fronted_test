@@ -14,8 +14,13 @@
   --c-accent: #e8d1a7;
   --c-primary: #743014;
   --c-primary-hover: #5f2610;
-  --c-sidebar: #3c3743;
-  --c-sidebar-muted: #bba99e;
+  /* rgba(60, 55, 67, .9) sobre el fondo de página, como en el mockup */
+  --c-sidebar: #4e4953;
+  --c-sidebar-muted: #bfaea4;
+  --c-sidebar-soft: #d4c5bb;
+  --c-footer: #2e211b;
+  --c-footer-border: #4a3a31;
+  --c-footer-muted: #c9b8a6;
 
   --c-success: #2f6b52;
   --c-success-bg: #dceadf;
@@ -36,9 +41,10 @@
 
   /* Forma */
   --r-pill: 999px;
-  --r-card: 18px;
-  --r-field: 12px;
-  --shadow-card: 0 6px 18px rgba(57, 37, 27, 0.09);
+  --r-card: 9px;
+  --r-btn: 8px;
+  --r-field: 6px;
+  --shadow-card: 0 6px 9px rgba(57, 37, 27, 0.09);
 
   --sidebar-w: 232px;
 }
@@ -192,8 +198,8 @@ textarea {
   justify-content: center;
   gap: 8px;
   height: 42px;
-  padding: 0 18px;
-  border-radius: var(--r-pill);
+  padding: 0 16px;
+  border-radius: var(--r-btn);
   border: 1px solid transparent;
   font: 700 13px/1 var(--f-sans);
   cursor: pointer;
@@ -250,7 +256,7 @@ textarea {
   gap: 6px;
   height: 42px;
   padding: 0 16px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-btn);
   border: 1px solid var(--c-border);
   background: var(--c-surface);
   font: 700 13px/1 var(--f-sans);
@@ -259,6 +265,7 @@ textarea {
 .chip.is-active {
   background: var(--c-accent);
   border-color: var(--c-accent);
+  font-weight: 500;
 }
 .chip__dot {
   width: 6px;
@@ -284,8 +291,12 @@ textarea {
   background: var(--c-surface);
   font: 400 13px var(--f-sans);
 }
-.input::placeholder {
+.input::placeholder,
+.select.is-placeholder {
   color: var(--c-disabled-fg);
+}
+.select.is-placeholder option {
+  color: var(--c-text);
 }
 .input:focus,
 .select:focus {
@@ -336,7 +347,7 @@ textarea {
   align-items: center;
   gap: 4px;
   padding: 6px 10px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-btn);
   font: 800 11px/1 var(--f-sans);
   letter-spacing: 0.06em;
   text-transform: uppercase;

@@ -1,11 +1,11 @@
 <app-page-header title="Cupones" subtitle="Crea promociones con vigencia y límites de uso.">
   <a class="btn btn--secondary" routerLink="/admin/cupones/solicitudes"><app-icon name="ticket" /> Solicitudes CineTown</a>
-  <a class="btn btn--primary" href="#nuevo-cupon"><app-icon name="plus" /> Crear cupón</a>
+  <button type="button" class="btn btn--primary" (click)="nuevo()"><app-icon name="plus" /> Crear cupón</button>
 </app-page-header>
 
 <div class="kpis">
   <app-kpi-card label="Activos" [value]="cupones.activos()" />
-  <app-kpi-card label="Canjes en cupones vigentes" [value]="cupones.canjesMes()" />
+  <app-kpi-card label="Canjes este mes" [value]="cupones.canjesMes()" />
   <app-kpi-card label="Descuento concedido" [value]="formatEuro(cupones.descuentoConcedido())" />
 </div>
 
@@ -26,11 +26,14 @@
             <p class="t-small muted">{{ c.descripcion }}</p>
           </div>
           <div class="coupon__meta">
-            <span class="t-small muted">{{ vigencia(c) }}</span>
+            <div class="coupon__dates">
+              <span class="t-small muted">{{ vigencia(c) }}</span>
+              <span class="t-small tabular">{{ c.usos }} / {{ c.usosMax }}</span>
+            </div>
             <app-status-badge [estado]="cupones.estado(c)" [texto]="cupones.estado(c) === 'agotado' ? 'Usos agotados' : undefined"
               [tono]="cupones.estado(c) === 'agotado' ? 'danger' : undefined" />
           </div>
-          <span class="t-small tabular coupon__uses">{{ c.usos }} / {{ c.usosMax }}</span>
+          <button type="button" class="btn btn--ghost btn--sm" (click)="editar(c)" [attr.aria-label]="'Editar ' + c.codigo">Editar</button>
         </li>
       } @empty {
         <li class="muted">No hay cupones con ese código.</li>
@@ -39,11 +42,16 @@
   </section>
 
   <form id="nuevo-cupon" class="card card--roomy stack new" [formGroup]="form" (ngSubmit)="crear()" novalidate>
-    <h2 class="t-h3">Nuevo cupón</h2>
+    <div class="row row--between">
+      <h2 class="t-h3">{{ editando() ? 'Editar ' + editando() : 'Nuevo cupón' }}</h2>
+      @if (editando()) {
+        <button type="button" class="btn btn--ghost btn--sm" (click)="nuevo()">Cancelar</button>
+      }
+    </div>
 
     <label class="field">
       <span class="t-label">Código</span>
-      <input class="input" formControlName="codigo" placeholder="TARDES15" [class.is-invalid]="invalido('codigo')" autocomplete="off" />
+      <input class="input" formControlName="codigo" placeholder="TARDES15" [readonly]="!!editando()" [class.is-invalid]="invalido('codigo')" autocomplete="off" />
       @if (invalido('codigo')) {
         <span class="field-error">De 4 a 16 letras o números, sin espacios.</span>
       }

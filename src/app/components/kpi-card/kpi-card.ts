@@ -16,7 +16,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   styles: `
     :host { display: block; }
     .kpi { display: flex; flex-direction: column; gap: 14px; padding: 16px; height: 100%; }
-    .kpi__label { font: 700 12px var(--f-sans); color: var(--c-muted); }
+    .kpi__label { font: 500 12px var(--f-sans); color: var(--c-muted); }
     .kpi__hint { font-size: 11px; color: var(--c-success); }
     .kpi__hint.is-alert { color: var(--c-danger); }
   `,

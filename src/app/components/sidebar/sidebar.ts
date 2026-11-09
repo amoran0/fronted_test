@@ -27,7 +27,6 @@ const MENU: Record<Rol, ConfigRol> = {
     etiqueta: 'Cliente',
     icono: 'user',
     menu: [
-      { texto: 'Carta', ruta: '/carta' },
       { texto: 'Nuevo pedido', ruta: '/pedido' },
       { texto: 'Mis pedidos', ruta: '/mis-pedidos' },
       { texto: 'Mi perfil', ruta: '/perfil' },
@@ -35,7 +34,7 @@ const MENU: Record<Rol, ConfigRol> = {
   },
   barista: {
     etiqueta: 'Barista',
-    icono: 'coffee',
+    icono: 'cup-soda',
     menu: [
       { texto: 'Cola de pedidos', ruta: '/barista/cola' },
       { texto: 'Disponibilidad', ruta: '/barista/disponibilidad' },

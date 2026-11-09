@@ -37,7 +37,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     descripcion: 'Pan de masa madre tostado, aguacate machacado con lima, sésamo tostado y escamas de sal.' },
   { id: 'cold-brew-naranja', nombre: 'Cold brew naranja', precio: 4.5, categoriaId: 'bebidas-frias', alergenos: [], estado: 'disponible', imagen: 'img/cold-brew-naranja.jpg',
     descripcion: 'Café extraído en frío durante 18 horas, servido con hielo y piel de naranja.' },
-  { id: 'roll-canela', nombre: 'Roll de canela', precio: 3.8, categoriaId: 'dulces', alergenos: ['Gluten', 'Leche', 'Huevo'], estado: 'agotado', imagen: 'img/roll-canela.jpg', nota: '0 unidades',
+  { id: 'roll-canela', nombre: 'Roll de canela', precio: 3.8, categoriaId: 'dulces', alergenos: ['Gluten', 'Leche', 'Huevo'], estado: 'agotado', imagen: 'img/roll-canela.jpg', imagenDetalle: 'img/roll-canela-detalle.jpg', nota: '0 unidades',
     descripcion: 'Masa de brioche horneada cada mañana, canela de Ceilán y un glaseado ligero de vainilla. Dulce, especiado y perfecto junto a un café.' },
   { id: 'fitzone-proteina', nombre: 'FitZone proteína', precio: 5.9, categoriaId: 'especiales', alergenos: ['Leche'], estado: 'agotado', imagen: 'img/fitzone-proteina.jpg', nota: 'Proveedor sin stock',
     descripcion: 'Batido de proteína de suero con plátano y vainilla, en colaboración con el gimnasio FitZone.' },
