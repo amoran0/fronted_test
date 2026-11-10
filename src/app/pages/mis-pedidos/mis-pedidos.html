@@ -51,7 +51,7 @@
     </div>
 
     @if (pedidoActivo.estado === 'pendiente') {
-      <button type="button" class="boton boton--secundario" (click)="cancelarPedido(pedidoActivo)">Cancelar pedido</button>
+      <button type="button" class="boton boton--cancelar" (click)="cancelarPedido(pedidoActivo)">Cancelar pedido</button>
     } @else {
       <app-aviso tono="advertencia" titulo="Este pedido ya no se puede cancelar">
         La preparación ha comenzado. Si necesitas ayuda, consulta al personal de barra.

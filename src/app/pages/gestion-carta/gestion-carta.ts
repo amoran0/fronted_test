@@ -6,20 +6,21 @@ import { Icono } from '../../components/icono/icono';
 import { CabeceraPagina } from '../../components/cabecera-pagina/cabecera-pagina';
 import { CampoBusqueda } from '../../components/campo-busqueda/campo-busqueda';
 import { EtiquetaEstado } from '../../components/etiqueta-estado/etiqueta-estado';
-import { ALERGENOS, Alergeno } from '../../models/producto';
+import { TarjetaListaEditable } from '../../components/tarjeta-lista-editable/tarjeta-lista-editable';
+import { Alergeno } from '../../models/producto';
 import { ServicioProductos } from '../../services/servicio-productos';
 import { PipeEuro } from '../../utils/pipe-euro';
 
 @Component({
   selector: 'app-pagina-gestion-carta',
-  imports: [CabeceraPagina, CampoBusqueda, GrupoFiltros, EtiquetaEstado, Aviso, Icono, PipeEuro, RouterLink],
+  imports: [CabeceraPagina, CampoBusqueda, GrupoFiltros, EtiquetaEstado, TarjetaListaEditable, Aviso, Icono, PipeEuro, RouterLink],
   templateUrl: './gestion-carta.html',
   styleUrl: './gestion-carta.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaginaGestionCarta {
   protected readonly servicioProductos = inject(ServicioProductos);
-  protected readonly alergenos = ALERGENOS;
+  protected readonly alergenos = this.servicioProductos.alergenos;
 
   protected readonly textoBusqueda = signal('');
   protected readonly seccionVisible = signal('productos');
@@ -27,7 +28,7 @@ export class PaginaGestionCarta {
   protected readonly opcionesSeccion = computed<OpcionFiltro[]>(() => [
     { valor: 'productos', texto: `Productos · ${this.servicioProductos.productos().length}` },
     { valor: 'categorias', texto: `Categorías · ${this.servicioProductos.categorias().length}` },
-    { valor: 'alergenos', texto: `Alérgenos · ${this.alergenos.length}` },
+    { valor: 'alergenos', texto: `Alérgenos · ${this.alergenos().length}` },
   ]);
 
   protected readonly productosFiltrados = computed(() => {
@@ -38,6 +39,11 @@ export class PaginaGestionCarta {
     });
   });
 
+  /** Productos de la lista actual que no están retirados. */
+  protected readonly productosActivos = computed(
+    () => this.productosFiltrados().filter((producto) => producto.estado !== 'retirado').length,
+  );
+
   /** Categorías con el número de productos de cada una. */
   protected readonly categoriasConTotal = computed(() =>
     this.servicioProductos.categorias().map((categoria) => ({
@@ -46,9 +52,12 @@ export class PaginaGestionCarta {
     })),
   );
 
-  protected crearCategoria(): void {
-    const nombre = prompt('Nombre de la nueva categoría');
-    if (nombre?.trim()) this.servicioProductos.crearCategoria(nombre).subscribe();
+  protected crearCategoria(nombre: string): void {
+    this.servicioProductos.crearCategoria(nombre).subscribe();
+  }
+
+  protected crearAlergeno(nombre: string): void {
+    this.servicioProductos.crearAlergeno(nombre);
   }
 
   protected productosConAlergeno(alergeno: Alergeno): number {

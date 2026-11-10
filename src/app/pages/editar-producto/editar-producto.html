@@ -77,7 +77,7 @@
         </div>
         @if (desplegableAlergenosAbierto()) {
           <ul class="alergenos__menu" id="alergenos-opciones" role="listbox" aria-multiselectable="true" aria-labelledby="alergenos-label">
-            @for (alergeno of todosAlergenos; track alergeno) {
+            @for (alergeno of todosAlergenos(); track alergeno) {
               <li>
                 <label class="alergenos__opcion">
                   <input type="checkbox" [checked]="tieneAlergeno(alergeno)" (change)="alternarAlergeno(alergeno)" />
@@ -105,7 +105,7 @@
 
     <div class="fila">
       <button type="submit" class="boton boton--primario">{{ esNuevo() ? 'Crear producto' : 'Guardar cambios' }}</button>
-      <a class="boton boton--secundario" routerLink="/admin/carta">Cancelar</a>
+      <a class="boton boton--cancelar" routerLink="/admin/carta">Cancelar</a>
     </div>
   </form>
 
@@ -133,7 +133,7 @@
             <p>{{ productoActual.nombre }} desaparecerá de la carta y no podrá pedirse. Se conservará en los pedidos antiguos y en las ventas históricas.</p>
             <div class="fila">
               <button type="button" class="boton boton--peligro" (click)="retirarProducto()">Retirar producto</button>
-              <button type="button" class="boton boton--secundario" (click)="pidiendoConfirmacionRetirada.set(false)">Cancelar</button>
+              <button type="button" class="boton boton--cancelar" (click)="pidiendoConfirmacionRetirada.set(false)">Cancelar</button>
             </div>
           </div>
         } @else {

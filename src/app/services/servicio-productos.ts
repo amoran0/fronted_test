@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { Categoria, EstadoProducto, Producto } from '../models/producto';
+import { ALERGENOS, Alergeno, Categoria, EstadoProducto, Producto } from '../models/producto';
 import { ServicioApi } from './servicio-api';
 import { CATEGORIAS_SIMULADAS, PRODUCTOS_SIMULADOS } from './datos-simulados';
 import { textoAIdentificador } from '../utils/formato';
@@ -11,10 +11,12 @@ export class ServicioProductos {
 
   private readonly productosCargados = signal<Producto[]>([]);
   private readonly categoriasCargadas = signal<Categoria[]>([]);
+  private readonly alergenosDisponibles = signal<Alergeno[]>([...ALERGENOS]);
   readonly cargando = signal(true);
 
   readonly productos = this.productosCargados.asReadonly();
   readonly categorias = this.categoriasCargadas.asReadonly();
+  readonly alergenos = this.alergenosDisponibles.asReadonly();
   /** Lo que ve el público: todo excepto lo retirado. */
   readonly carta = computed(() => this.productosCargados().filter((producto) => producto.estado !== 'retirado'));
 
@@ -62,6 +64,17 @@ export class ServicioProductos {
       ? this.api.reemplazar<Producto>(`/productos/${producto.id}`, producto, () => producto)
       : this.api.crear<Producto>('/productos', producto, () => producto);
     return peticion.pipe(tap((productoGuardado) => this.fusionarCambios([productoGuardado])));
+  }
+
+  /** Añade un alérgeno a la lista (ignora duplicados sin distinguir mayúsculas). */
+  crearAlergeno(nombre: string): void {
+    const nombreLimpio = nombre.trim();
+    if (!nombreLimpio) return;
+    this.alergenosDisponibles.update((alergenos) =>
+      alergenos.some((alergeno) => alergeno.toLowerCase() === nombreLimpio.toLowerCase())
+        ? alergenos
+        : [...alergenos, nombreLimpio],
+    );
   }
 
   crearCategoria(nombre: string, grupo: Categoria['grupo'] = 'comida'): Observable<Categoria> {

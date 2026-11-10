@@ -1,5 +1,7 @@
-export type Alergeno = 'Gluten' | 'Leche' | 'Huevo' | 'Sésamo' | 'Frutos secos' | 'Soja';
+/** Nombre del alérgeno; el admin puede añadir nuevos además de los iniciales. */
+export type Alergeno = string;
 
+/** Alérgenos con los que arranca la carta. */
 export const ALERGENOS: Alergeno[] = ['Gluten', 'Leche', 'Huevo', 'Sésamo', 'Frutos secos', 'Soja'];
 
 /** Grupo usado por los filtros rápidos de la carta. */
