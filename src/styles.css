@@ -315,6 +315,51 @@ textarea {
   background-position: right 12px center;
   cursor: pointer;
 }
+/* Lista desplegable con el estilo de la página (navegadores sin soporte muestran la nativa). */
+@supports (appearance: base-select) {
+  .selector,
+  .selector::picker(select) {
+    appearance: base-select;
+  }
+  .selector {
+    display: flex;
+    align-items: center;
+  }
+  .selector::picker-icon {
+    display: none;
+  }
+  .selector::picker(select) {
+    margin-top: 4px;
+    padding: 6px;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-tarjeta);
+    background: var(--color-superficie);
+    box-shadow: var(--sombra-tarjeta);
+  }
+  .selector option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 10px;
+    border-radius: var(--radio-campo);
+    color: var(--color-texto);
+    cursor: pointer;
+  }
+  .selector option::checkmark {
+    order: 1;
+    margin-left: auto;
+    color: var(--color-primario);
+  }
+  .selector option:hover,
+  .selector option:focus-visible {
+    background: var(--color-arena);
+    outline: none;
+  }
+  .selector option:checked {
+    background: var(--color-acento);
+    font-weight: 700;
+  }
+}
 .entrada-con-icono {
   position: relative;
 }

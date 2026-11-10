@@ -4,7 +4,7 @@ import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from 
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { rutas } from './rutas';
-import { interceptorSesion } from './interceptores/interceptor-sesion';
+import { interceptorSesion } from './interceptors/interceptor-sesion';
 
 registerLocaleData(localeEs);
 

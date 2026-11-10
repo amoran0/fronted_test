@@ -1,24 +1,24 @@
 import { Routes } from '@angular/router';
-import { guardaSesionIniciada, guardaSoloInvitados } from './guardas/guarda-sesion';
-import { guardaPorRol } from './guardas/guarda-rol';
-import { EstructuraAplicacion } from './componentes/estructura-aplicacion/estructura-aplicacion';
+import { guardaSesionIniciada, guardaSoloInvitados } from './guards/guarda-sesion';
+import { guardaPorRol } from './guards/guarda-rol';
+import { EstructuraAplicacion } from './components/estructura-aplicacion/estructura-aplicacion';
 
 /** Carga diferida de cada página (se descarga al visitarla por primera vez). */
 const cargarPagina = {
-  carta: () => import('./paginas/carta/carta').then((modulo) => modulo.PaginaCarta),
-  detalleProducto: () => import('./paginas/detalle-producto/detalle-producto').then((modulo) => modulo.PaginaDetalleProducto),
-  acceder: () => import('./paginas/acceder/acceder').then((modulo) => modulo.PaginaAcceder),
-  informacionSeccion: () => import('./paginas/informacion-seccion/informacion-seccion').then((modulo) => modulo.PaginaInformacionSeccion),
-  realizaPedido: () => import('./paginas/realiza-pedido/realiza-pedido').then((modulo) => modulo.PaginaRealizaPedido),
-  confirmacionPedido: () => import('./paginas/confirmacion-pedido/confirmacion-pedido').then((modulo) => modulo.PaginaConfirmacionPedido),
-  misPedidos: () => import('./paginas/mis-pedidos/mis-pedidos').then((modulo) => modulo.PaginaMisPedidos),
-  colaPedidos: () => import('./paginas/cola-pedidos/cola-pedidos').then((modulo) => modulo.PaginaColaPedidos),
-  disponibilidad: () => import('./paginas/disponibilidad/disponibilidad').then((modulo) => modulo.PaginaDisponibilidad),
-  gestionCarta: () => import('./paginas/gestion-carta/gestion-carta').then((modulo) => modulo.PaginaGestionCarta),
-  editarProducto: () => import('./paginas/editar-producto/editar-producto').then((modulo) => modulo.PaginaEditarProducto),
-  cupones: () => import('./paginas/cupones/cupones').then((modulo) => modulo.PaginaCupones),
-  solicitudesCupones: () => import('./paginas/solicitudes-cupones/solicitudes-cupones').then((modulo) => modulo.PaginaSolicitudesCupones),
-  informes: () => import('./paginas/informes/informes').then((modulo) => modulo.PaginaInformes),
+  carta: () => import('./pages/carta/carta').then((modulo) => modulo.PaginaCarta),
+  detalleProducto: () => import('./pages/detalle-producto/detalle-producto').then((modulo) => modulo.PaginaDetalleProducto),
+  acceder: () => import('./pages/acceder/acceder').then((modulo) => modulo.PaginaAcceder),
+  informacionSeccion: () => import('./pages/informacion-seccion/informacion-seccion').then((modulo) => modulo.PaginaInformacionSeccion),
+  realizaPedido: () => import('./pages/realiza-pedido/realiza-pedido').then((modulo) => modulo.PaginaRealizaPedido),
+  confirmacionPedido: () => import('./pages/confirmacion-pedido/confirmacion-pedido').then((modulo) => modulo.PaginaConfirmacionPedido),
+  misPedidos: () => import('./pages/mis-pedidos/mis-pedidos').then((modulo) => modulo.PaginaMisPedidos),
+  colaPedidos: () => import('./pages/cola-pedidos/cola-pedidos').then((modulo) => modulo.PaginaColaPedidos),
+  disponibilidad: () => import('./pages/disponibilidad/disponibilidad').then((modulo) => modulo.PaginaDisponibilidad),
+  gestionCarta: () => import('./pages/gestion-carta/gestion-carta').then((modulo) => modulo.PaginaGestionCarta),
+  editarProducto: () => import('./pages/editar-producto/editar-producto').then((modulo) => modulo.PaginaEditarProducto),
+  cupones: () => import('./pages/cupones/cupones').then((modulo) => modulo.PaginaCupones),
+  solicitudesCupones: () => import('./pages/solicitudes-cupones/solicitudes-cupones').then((modulo) => modulo.PaginaSolicitudesCupones),
+  informes: () => import('./pages/informes/informes').then((modulo) => modulo.PaginaInformes),
 };
 
 export const rutas: Routes = [
@@ -31,7 +31,7 @@ export const rutas: Routes = [
       // Público (accesible para todos los roles)
       { path: 'carta', title: 'Carta · The Coffee Room', loadComponent: cargarPagina.carta },
       { path: 'carta/:id', title: 'Detalle del producto · The Coffee Room', loadComponent: cargarPagina.detalleProducto },
-      { path: 'como-funciona', title: 'Cómo funciona · The Coffee Room', loadComponent: cargarPagina.informacionSeccion, data: { seccion: 'como-funciona' } },
+      { path: 'como-pedir', title: 'Cómo pedir · The Coffee Room', loadComponent: cargarPagina.informacionSeccion, data: { seccion: 'como-funciona' } },
       { path: 'acceder', title: 'Acceder · The Coffee Room', canActivate: [guardaSoloInvitados], loadComponent: cargarPagina.acceder },
 
       // Cliente
