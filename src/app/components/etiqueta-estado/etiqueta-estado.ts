@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 type TonoEtiqueta = 'exito' | 'informacion' | 'peligro' | 'advertencia' | 'neutro' | 'acento';
 
@@ -30,12 +30,23 @@ const TEXTO_Y_TONO_POR_ESTADO: Record<string, [string, TonoEtiqueta]> = {
   selector: 'app-etiqueta-estado',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display:inline-flex' },
-  template: `<span class="insignia" [class]="'insignia insignia--' + tonoFinal()">{{ textoFinal() }}</span>`,
+  template: `<span class="insignia" [class]="'insignia insignia--' + tonoFinal()" [class.insignia--texto]="textoPlano()" [class.insignia--estado-producto]="estado() === 'disponible' || estado() === 'agotado'">{{ textoFinal() }}</span>`,
+  styles: `
+    .insignia--texto {
+      padding: 0;
+      background: transparent;
+      font-weight: 800;
+    }
+    .insignia--estado-producto {
+      font-weight: 900;
+    }
+  `,
 })
 export class EtiquetaEstado {
   readonly estado = input<string>();
   readonly texto = input<string>();
   readonly tono = input<TonoEtiqueta>();
+  readonly textoPlano = input(false, { transform: booleanAttribute });
 
   protected readonly textoFinal = computed(() => this.texto() ?? TEXTO_Y_TONO_POR_ESTADO[this.estado() ?? '']?.[0] ?? this.estado() ?? '');
   protected readonly tonoFinal = computed(() => this.tono() ?? TEXTO_Y_TONO_POR_ESTADO[this.estado() ?? '']?.[1] ?? 'neutro');

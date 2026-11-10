@@ -25,7 +25,7 @@ import { EtiquetaEstado } from '../etiqueta-estado/etiqueta-estado';
           <span class="precio">{{ producto().precio | euro }}</span>
         </div>
         <div class="tarjeta-producto__datos">
-          <app-etiqueta-estado [estado]="producto().estado" />
+          <app-etiqueta-estado [estado]="producto().estado" textoPlano />
           <span class="t-leyenda atenuado">{{ nombreCategoria() }}</span>
         </div>
         <p class="t-leyenda atenuado">Alérgenos: {{ textoAlergenos() }}</p>
@@ -34,15 +34,15 @@ import { EtiquetaEstado } from '../etiqueta-estado/etiqueta-estado';
   `,
   styles: `
     :host { display: block; }
-    .tarjeta-producto { display: flex; flex-direction: column; padding: 0; overflow: hidden; height: 100%; text-decoration: none; transition: transform .15s, box-shadow .15s; }
-    .tarjeta-producto:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(57, 37, 27, .14); }
-    .tarjeta-producto__imagen { height: 112px; background: var(--color-arena); border-radius: var(--radio-tarjeta) var(--radio-tarjeta) 0 0; overflow: hidden; }
+    .tarjeta-producto { display: flex; flex-direction: column; height: 100%; padding: 0; overflow: hidden; background: transparent; border: 0; border-radius: 0; box-shadow: none; text-decoration: none; transition: transform .15s; }
+    .tarjeta-producto:hover { transform: translateY(-2px); }
+    .tarjeta-producto__imagen { height: 112px; background: var(--color-arena); border-radius: var(--radio-tarjeta); overflow: hidden; }
     .tarjeta-producto__imagen img { width: 100%; height: 100%; object-fit: cover; }
     .esta-agotado .tarjeta-producto__sin-imagen { opacity: .5; }
     .tarjeta-producto__sin-imagen { height: 100%; background: var(--color-arena); }
-    .tarjeta-producto__informacion { display: flex; flex-direction: column; gap: 8px; padding: 14px 15px 40px; }
-    .tarjeta-producto__titulo { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-    .tarjeta-producto__datos { display: flex; align-items: center; gap: 7px; }
+    .tarjeta-producto__informacion { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 0 40px; text-align: center; }
+    .tarjeta-producto__titulo { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .tarjeta-producto__datos { display: flex; align-items: center; justify-content: center; gap: 7px; }
   `,
 })
 export class TarjetaProducto {

@@ -6,7 +6,7 @@ import { CabeceraPagina } from '../../components/cabecera-pagina/cabecera-pagina
 import { TarjetaProducto } from '../../components/tarjeta-producto/tarjeta-producto';
 import { CampoBusqueda } from '../../components/campo-busqueda/campo-busqueda';
 import { SelectorMultiple } from '../../components/selector-multiple/selector-multiple';
-import { ALERGENOS, Alergeno } from '../../models/producto';
+import { Alergeno } from '../../models/producto';
 import { ServicioAutenticacion } from '../../services/servicio-autenticacion';
 import { ServicioCarrito } from '../../services/servicio-carrito';
 import { ServicioProductos } from '../../services/servicio-productos';
@@ -23,7 +23,7 @@ export class PaginaCarta {
   protected readonly servicioCarrito = inject(ServicioCarrito);
   protected readonly autenticacion = inject(ServicioAutenticacion);
 
-  protected readonly alergenos = ALERGENOS;
+  protected readonly alergenos = this.servicioProductos.alergenos;
   protected readonly opcionesPrecioMaximo = [5, 10, 15];
 
   protected readonly opcionesTipoProducto: OpcionFiltro[] = [

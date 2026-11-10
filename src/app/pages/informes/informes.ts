@@ -5,7 +5,6 @@ import { CabeceraPagina } from '../../components/cabecera-pagina/cabecera-pagina
 import { MetricasDia, RankingProducto, VentaFranja } from '../../models/informe';
 import { ServicioInformes } from '../../services/servicio-informes';
 import { porcentaje } from '../../utils/calculos';
-import { exportarCsv } from '../../utils/exportar-csv';
 import { PipeEuro } from '../../utils/pipe-euro';
 import { formatearEuros, formatearFecha, fechaHoyIso } from '../../utils/formato';
 
@@ -58,30 +57,5 @@ export class PaginaInformes {
     this.rangoDesde.set(desde);
     this.rangoHasta.set(hasta);
     this.servicioInformes.ranking(desde, hasta).subscribe((rankingRecibido) => this.rankingProductos.set(rankingRecibido));
-  }
-
-  protected exportarInformeCsv(): void {
-    const metricasDia = this.metricas();
-    exportarCsv(`informe-${this.diaSeleccionado()}.csv`, [
-      ['Informe de ventas', formatearFecha(this.diaSeleccionado())],
-      [],
-      ['Métrica', 'Valor'],
-      ['Ventas (€)', metricasDia?.ventas ?? 0],
-      ['Pedidos', metricasDia?.pedidos ?? 0],
-      ['Ticket medio (€)', metricasDia?.ticketMedio ?? 0],
-      ['Descuentos (€)', metricasDia?.descuentos ?? 0],
-      [],
-      ['Franja', 'Ventas (€)'],
-      ...this.ventasPorFranja().map((franja) => [franja.hora, franja.importe]),
-      [],
-      ['Posición', 'Producto', 'Categoría', 'Unidades', 'Importe (€)'],
-      ...this.rankingProductos().map((productoRanking) => [
-        productoRanking.posicion,
-        productoRanking.nombre,
-        productoRanking.categoria,
-        productoRanking.unidades,
-        productoRanking.importe,
-      ]),
-    ]);
   }
 }

@@ -5,7 +5,7 @@ import { Aviso } from '../../components/aviso/aviso';
 import { Icono } from '../../components/icono/icono';
 import { CabeceraPagina } from '../../components/cabecera-pagina/cabecera-pagina';
 import { EtiquetaEstado } from '../../components/etiqueta-estado/etiqueta-estado';
-import { ALERGENOS, Alergeno, EstadoProducto, Producto } from '../../models/producto';
+import { Alergeno, EstadoProducto, Producto } from '../../models/producto';
 import { ServicioProductos } from '../../services/servicio-productos';
 import { PipeEuro } from '../../utils/pipe-euro';
 import { textoAIdentificador } from '../../utils/formato';
@@ -24,7 +24,7 @@ export class PaginaEditarProducto {
   protected readonly servicioProductos = inject(ServicioProductos);
   private readonly enrutador = inject(Router);
 
-  protected readonly todosAlergenos = ALERGENOS;
+  protected readonly todosAlergenos = this.servicioProductos.alergenos;
   protected readonly esNuevo = computed(() => this.id() === 'nuevo');
   protected readonly producto = computed(() => this.servicioProductos.porId(this.id()));
   protected readonly pidiendoConfirmacionRetirada = signal(false);

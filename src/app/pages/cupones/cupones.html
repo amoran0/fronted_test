@@ -45,7 +45,7 @@
     <div class="fila fila--separada">
       <h2 class="t-titulo-3">{{ codigoEnEdicion() ? 'Editar ' + codigoEnEdicion() : 'Nuevo cupón' }}</h2>
       @if (codigoEnEdicion()) {
-        <button type="button" class="boton boton--discreto boton--pequeno" (click)="empezarCuponNuevo()">Cancelar</button>
+        <button type="button" class="boton boton--cancelar boton--pequeno" (click)="empezarCuponNuevo()">Cancelar</button>
       }
     </div>
 

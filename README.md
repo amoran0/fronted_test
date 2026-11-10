@@ -39,7 +39,7 @@ src/app
 ├── guards         → auth.guard.ts (sesión), role.guard.ts (rol, vía `data.roles` de la ruta)
 ├── interceptors   → auth.interceptor.ts (añade `Authorization: Bearer <token>`; cierra sesión con 401)
 ├── utils          → calculos.ts (IVA, descuentos), validaciones.ts (DNI, cupones, email),
-│                    formato.ts + euro.pipe.ts, csv.ts, negocio.ts (datos del local)
+│                    formato.ts + euro.pipe.ts, negocio.ts (datos del local)
 ├── app.routes.ts
 └── app.config.ts
 src/environments   → URL de la API (desarrollo / producción) y `useMocks`
@@ -55,7 +55,7 @@ src/environments   → URL de la API (desarrollo / producción) y `useMocks`
 - El precio de cada línea se fija al añadirla (los cambios de precio no afectan a pedidos ya hechos).
 - Flujo del pedido: pendiente → en preparación → listo → entregado. Solo se cancela si está pendiente.
 - "Retirar" un producto es una baja lógica: desaparece de la carta pero se conserva en el historial.
-- Los informes cuentan solo pedidos entregados; se pueden exportar a CSV.
+- Los informes cuentan solo pedidos entregados.
 
 ## Conectar la API real
 

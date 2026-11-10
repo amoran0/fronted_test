@@ -39,7 +39,7 @@
         @switch (pedido.estado) {
           @case ('pendiente') {
             <button type="button" class="boton boton--primario expandir" (click)="avanzarEstado(pedido)">Preparar</button>
-            <button type="button" class="boton boton--peligro" (click)="cancelarPedido(pedido)">Cancelar</button>
+            <button type="button" class="boton boton--cancelar" (click)="cancelarPedido(pedido)">Cancelar</button>
           }
           @case ('en_preparacion') {
             <button type="button" class="boton boton--primario expandir" (click)="avanzarEstado(pedido)">Marcar como listo</button>

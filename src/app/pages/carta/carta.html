@@ -30,7 +30,7 @@
     <div class="campo expandir">
       <span class="t-etiqueta">Excluir alérgenos</span>
       <app-selector-multiple
-        [opciones]="alergenos"
+        [opciones]="alergenos()"
         [(valor)]="alergenosExcluidos"
         etiqueta="Excluir alérgenos"
         textoIndicativo="Ej.: Gluten, Leche, Sésamo…"
@@ -38,7 +38,7 @@
     </div>
     <button type="button" class="boton boton--secundario" (click)="quitarFiltros()">
       <app-icono nombre="cerrar" [tamano]="15" />
-      Quitar filtros
+      Borrar filtros
     </button>
   </div>
 </section>

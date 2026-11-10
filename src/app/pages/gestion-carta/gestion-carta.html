@@ -1,6 +1,4 @@
-<app-cabecera-pagina titulo="Gestión de carta">
-  <a class="boton boton--primario" routerLink="/admin/carta/nuevo"><app-icono nombre="mas" /> Nuevo producto</a>
-</app-cabecera-pagina>
+<app-cabecera-pagina titulo="Gestión de carta" />
 
 <div class="barra-herramientas">
   <div class="campo expandir">
@@ -16,7 +14,7 @@
       @case ('productos') {
         <div class="tarjeta__cabecera">
           <h2 class="t-titulo-3">Productos</h2>
-          <span class="insignia insignia--informacion">{{ productosFiltrados().length }} mostrados</span>
+          <span class="insignia insignia--informacion">{{ productosActivos() }} activos</span>
         </div>
         <table class="tabla">
           <thead class="solo-lector-pantalla">
@@ -54,8 +52,8 @@
       @case ('alergenos') {
         <h2 class="t-titulo-3 cabecera">Alérgenos</h2>
         <ul class="simple">
-          @for (alergeno of alergenos; track alergeno) {
-            <li class="fila fila--separada"><span class="insignia insignia--advertencia">{{ alergeno }}</span><span class="atenuado">{{ productosConAlergeno(alergeno) }} productos</span></li>
+          @for (alergeno of alergenos(); track alergeno) {
+            <li class="fila fila--separada"><strong>{{ alergeno }}</strong><span class="atenuado">{{ productosConAlergeno(alergeno) }} productos</span></li>
           }
         </ul>
       }
@@ -63,27 +61,26 @@
   </section>
 
   <div class="pila">
-    <section class="tarjeta tarjeta--amplia">
-      <div class="tarjeta__cabecera">
-        <h2 class="t-titulo-3">Categorías</h2>
-        <button type="button" class="boton boton--discreto boton--pequeno" (click)="crearCategoria()"><app-icono nombre="mas" /> Añadir</button>
-      </div>
-      <ul class="simple compacta">
-        @for (categoria of categoriasConTotal(); track categoria.id) {
-          <li>{{ categoria.nombre }} · {{ categoria.total }}</li>
-        }
-      </ul>
-    </section>
-    <section class="tarjeta tarjeta--amplia">
-      <div class="tarjeta__cabecera">
-        <h2 class="t-titulo-3">Alérgenos</h2>
-        <button type="button" class="boton boton--discreto boton--pequeno" (click)="seccionVisible.set('alergenos')">Gestionar</button>
-      </div>
-      <div class="fila etiquetas">
-        @for (alergeno of alergenos; track alergeno) {
-          <span class="insignia insignia--advertencia">{{ alergeno }}</span>
-        }
-      </div>
-    </section>
+    @switch (seccionVisible()) {
+      @case ('productos') {
+        <app-tarjeta-lista-editable titulo="Productos" enlaceAnadir="/admin/carta/nuevo" />
+      }
+      @case ('categorias') {
+        <app-tarjeta-lista-editable
+          titulo="Categorías"
+          etiquetaNuevo="Nueva categoría"
+          textoIndicativo="Nombre de la categoría…"
+          (anadir)="crearCategoria($event)"
+        />
+      }
+      @case ('alergenos') {
+        <app-tarjeta-lista-editable
+          titulo="Alérgenos"
+          etiquetaNuevo="Nuevo alérgeno"
+          textoIndicativo="Nombre del alérgeno…"
+          (anadir)="crearAlergeno($event)"
+        />
+      }
+    }
   </div>
 </div>
