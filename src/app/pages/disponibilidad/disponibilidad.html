@@ -72,6 +72,6 @@
   </ul>
 </section>
 
-@if (mensaje(); as textoMensaje) {
-  <app-aviso tono="exito" class="mensaje">{{ textoMensaje }}</app-aviso>
+@if (resultado(); as resultadoOperacion) {
+  <app-aviso [tono]="resultadoOperacion.tono" class="mensaje">{{ resultadoOperacion.texto }}</app-aviso>
 }

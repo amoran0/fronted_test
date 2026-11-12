@@ -41,7 +41,9 @@ export class PaginaSolicitudesCupones {
     fecha: [fechaHoyIso(), Validators.required],
     email: ['marta.r@example.com', Validators.email],
   });
-  protected readonly resultadoComprobacion = signal<(ResultadoValidacion & { total: number }) | null>(null);
+  protected readonly resultadoComprobacion = signal<
+    (ResultadoValidacion & { total: number }) | null
+  >(null);
 
   protected generarCupon(): void {
     this.resumenCuponGenerado.set(null);
@@ -51,14 +53,16 @@ export class PaginaSolicitudesCupones {
       return;
     }
     const datosSolicitud = this.formularioSolicitud.getRawValue();
-    this.servicioCupones.generarParaSolicitud({ ...datosSolicitud, recibida: fechaHoyIso() }).subscribe({
-      next: (cuponGenerado) =>
-        this.resumenCuponGenerado.set(
-          `Cupón personal de ${formatearEuros(cuponGenerado.valor)} · activo · 0/${cuponGenerado.usosMax} usos · ` +
-            `mínimo ${formatearEuros(cuponGenerado.minimoCompra)} · para ${cuponGenerado.email}.`,
-        ),
-      error: (errorGenerando: Error) => this.errorGeneracion.set(errorGenerando.message),
-    });
+    this.servicioCupones
+      .generarParaSolicitud({ ...datosSolicitud, recibida: fechaHoyIso() })
+      .subscribe({
+        next: (cuponGenerado) =>
+          this.resumenCuponGenerado.set(
+            `Cupón personal de ${formatearEuros(cuponGenerado.valor)} · activo · 0/${cuponGenerado.usosMax} usos · ` +
+              `mínimo ${formatearEuros(cuponGenerado.minimoCompra)} · para ${cuponGenerado.email}.`,
+          ),
+        error: (errorGenerando: Error) => this.errorGeneracion.set(errorGenerando.message),
+      });
   }
 
   protected comprobarCupon(): void {
@@ -75,6 +79,9 @@ export class PaginaSolicitudesCupones {
     const descuentoAplicado = validacion.valido
       ? { tipo: 'cupon' as const, etiqueta: '', importe: validacion.descuento! }
       : null;
-    this.resultadoComprobacion.set({ ...validacion, total: calcularTotal(datosComprobacion.importe, descuentoAplicado) });
+    this.resultadoComprobacion.set({
+      ...validacion,
+      total: calcularTotal(datosComprobacion.importe, descuentoAplicado),
+    });
   }
 }

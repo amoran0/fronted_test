@@ -12,6 +12,11 @@
   <section class="tarjeta tarjeta--amplia">
     @switch (seccionVisible()) {
       @case ('productos') {
+        @if (servicioProductos.error(); as mensajeError) {
+          <app-aviso tono="peligro" titulo="No se ha podido cargar la carta">{{ mensajeError }}</app-aviso>
+        } @else if (servicioProductos.cargando()) {
+          <p class="atenuado">Cargando productos…</p>
+        }
         <div class="tarjeta__cabecera">
           <h2 class="t-titulo-3">Productos</h2>
           <span class="insignia insignia--informacion">{{ productosActivos() }} activos</span>
@@ -43,9 +48,17 @@
       }
       @case ('categorias') {
         <h2 class="t-titulo-3 cabecera">Categorías</h2>
+        @if (resultadoCategoria(); as resultado) {
+          <app-aviso [tono]="resultado.tono">{{ resultado.texto }}</app-aviso>
+        }
         <ul class="simple">
           @for (categoria of categoriasConTotal(); track categoria.id) {
-            <li class="fila fila--separada"><strong>{{ categoria.nombre }}</strong><span class="atenuado">{{ categoria.total }} productos</span></li>
+            <li class="fila fila--separada">
+              <strong class="expandir">{{ categoria.nombre }}</strong>
+              <span class="atenuado">{{ categoria.total }} productos</span>
+              <button type="button" class="boton boton--discreto boton--pequeno" (click)="eliminarCategoria(categoria.id, categoria.nombre)"
+                [attr.aria-label]="'Eliminar ' + categoria.nombre">Eliminar</button>
+            </li>
           }
         </ul>
       }
@@ -63,10 +76,15 @@
   <div class="pila">
     @switch (seccionVisible()) {
       @case ('productos') {
-        <app-tarjeta-lista-editable titulo="Productos" enlaceAnadir="/admin/carta/nuevo" />
+        @if (servicioProductos.error(); as mensajeError) {
+          <app-aviso tono="peligro" titulo="No se ha podido cargar la carta">{{ mensajeError }}</app-aviso>
+        } @else if (servicioProductos.cargando()) {
+          <p class="atenuado">Cargando productos…</p>
+        }
+        <app-tarjeta-anadir titulo="Productos" enlaceAnadir="/admin/carta/nuevo" />
       }
       @case ('categorias') {
-        <app-tarjeta-lista-editable
+        <app-tarjeta-anadir
           titulo="Categorías"
           etiquetaNuevo="Nueva categoría"
           textoIndicativo="Nombre de la categoría…"
@@ -74,7 +92,7 @@
         />
       }
       @case ('alergenos') {
-        <app-tarjeta-lista-editable
+        <app-tarjeta-anadir
           titulo="Alérgenos"
           etiquetaNuevo="Nuevo alérgeno"
           textoIndicativo="Nombre del alérgeno…"

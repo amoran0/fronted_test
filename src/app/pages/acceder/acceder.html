@@ -29,6 +29,7 @@
     <button class="boton boton--primario" type="submit" [disabled]="enviando()">
       <app-icono nombre="iniciar-sesion" /> {{ enviando() ? 'Entrando…' : 'Entrar' }}
     </button>
+    <p class="t-pequeno atenuado">¿No tienes cuenta? <a routerLink="/registro">Crea una</a></p>
   </form>
 
   @if (usuariosDemostracion.length) {

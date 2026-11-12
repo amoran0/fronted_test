@@ -107,6 +107,9 @@
         </app-aviso>
       }
 
+      @if (errorEnvio(); as mensajeErrorEnvio) {
+        <app-aviso tono="peligro" titulo="No se ha podido confirmar el pedido">{{ mensajeErrorEnvio }}</app-aviso>
+      }
       <button type="button" class="boton boton--primario" [disabled]="enviando()" (click)="confirmarPedido()">
         <app-icono nombre="circulo-confirmacion" /> {{ enviando() ? 'Confirmando…' : 'Confirmar pedido' }}
       </button>

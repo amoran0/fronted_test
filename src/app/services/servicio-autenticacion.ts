@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
-import { Credenciales, Rol, Sesion } from '../models/usuario';
+import { Credenciales, DatosRegistro, Rol, Sesion, Usuario } from '../models/usuario';
 import { ServicioApi } from './servicio-api';
 import { USUARIOS_SIMULADOS } from './datos-simulados';
 import { guardarJson, leerJson } from '../utils/almacen';
@@ -40,6 +40,30 @@ export class ServicioAutenticacion {
         if (!usuarioEncontrado) throw new Error('Email o contraseña incorrectos.');
         const { contrasena: _contrasenaOmitida, ...usuario } = usuarioEncontrado;
         return { token: 'demo.' + btoa(usuarioEncontrado.id), usuario };
+      })
+      .pipe(tap((sesionIniciada) => this.guardarSesion(sesionIniciada)));
+  }
+
+  /** Crea una cuenta de cliente y deja la sesión iniciada (la API devuelve el token). */
+  registrar(datos: DatosRegistro): Observable<Sesion> {
+    const email = datos.email.trim().toLowerCase();
+    return this.api
+      .crear<Sesion>('/auth/registro', { ...datos, email, nombre: datos.nombre.trim() }, () => {
+        if (
+          USUARIOS_SIMULADOS.some(
+            (usuarioSimulado) => usuarioSimulado.email.toLowerCase() === email,
+          )
+        ) {
+          throw new Error('Ya existe una cuenta con ese email.');
+        }
+        const usuario: Usuario = {
+          id: 'u-' + Date.now().toString(36),
+          nombre: datos.nombre.trim(),
+          email,
+          rol: 'cliente',
+        };
+        USUARIOS_SIMULADOS.push({ ...usuario, contrasena: datos.contrasena });
+        return { token: 'demo.' + btoa(usuario.id), usuario };
       })
       .pipe(tap((sesionIniciada) => this.guardarSesion(sesionIniciada)));
   }

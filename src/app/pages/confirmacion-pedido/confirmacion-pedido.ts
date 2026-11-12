@@ -29,13 +29,17 @@ export class PaginaConfirmacionPedido {
 
   protected readonly codigoCuponEscrito = signal(this.servicioCarrito.codigoCupon() ?? '');
   protected readonly errorCupon = signal<string | null>(null);
-  protected readonly dniEscrito = signal(this.servicioCarrito.dniSocio() ?? this.autenticacion.usuario()?.dniSocio ?? '');
+  protected readonly dniEscrito = signal(
+    this.servicioCarrito.dniSocio() ?? this.autenticacion.usuario()?.dniSocio ?? '',
+  );
   protected readonly errorDni = signal<string | null>(null);
   protected readonly enviando = signal(false);
 
-  protected readonly cuponAplicado = computed(() => !!this.servicioCarrito.descuentoCupon());
+  protected readonly cuponAplicado = computed(() => !!this.servicioCarrito.descuentoDeCupon());
   /** El descuento aplicado es el de socio (por ser mayor que el del cupón). */
-  protected readonly ganaDescuentoSocio = computed(() => this.servicioCarrito.descuento()?.tipo === 'socio');
+  protected readonly ganaDescuentoSocio = computed(
+    () => this.servicioCarrito.descuento()?.tipo === 'socio',
+  );
 
   protected aplicarCupon(): void {
     const codigo = this.codigoCuponEscrito().trim().toUpperCase();
@@ -58,11 +62,18 @@ export class PaginaConfirmacionPedido {
     this.errorDni.set(dniValido ? null : 'El DNI no es válido. Revisa los 8 números y la letra.');
   }
 
+  /** Error devuelto al confirmar el pedido (se muestra sobre el botón). */
+  protected readonly errorEnvio = signal<string | null>(null);
+
   protected confirmarPedido(): void {
     this.enviando.set(true);
+    this.errorEnvio.set(null);
     this.servicioPedidos.confirmar().subscribe({
       next: () => this.enrutador.navigateByUrl('/mis-pedidos'),
-      error: () => this.enviando.set(false),
+      error: (errorConfirmando: Error) => {
+        this.errorEnvio.set(errorConfirmando.message);
+        this.enviando.set(false);
+      },
     });
   }
 }

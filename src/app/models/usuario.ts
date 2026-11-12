@@ -19,3 +19,8 @@ export interface Credenciales {
   email: string;
   contrasena: string;
 }
+
+/** Datos que se envían para crear una cuenta de cliente. */
+export interface DatosRegistro extends Credenciales {
+  nombre: string;
+}

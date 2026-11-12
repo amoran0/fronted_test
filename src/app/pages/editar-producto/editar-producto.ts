@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Aviso } from '../../components/aviso/aviso';
@@ -12,7 +20,15 @@ import { textoAIdentificador } from '../../utils/formato';
 
 @Component({
   selector: 'app-pagina-editar-producto',
-  imports: [ReactiveFormsModule, CabeceraPagina, Aviso, Icono, EtiquetaEstado, PipeEuro, RouterLink],
+  imports: [
+    ReactiveFormsModule,
+    CabeceraPagina,
+    Aviso,
+    Icono,
+    EtiquetaEstado,
+    PipeEuro,
+    RouterLink,
+  ],
   templateUrl: './editar-producto.html',
   styleUrl: './editar-producto.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,6 +45,8 @@ export class PaginaEditarProducto {
   protected readonly producto = computed(() => this.servicioProductos.porId(this.id()));
   protected readonly pidiendoConfirmacionRetirada = signal(false);
   protected readonly cambiosGuardados = signal(false);
+  protected readonly guardando = signal(false);
+  protected readonly errorGuardado = signal<string | null>(null);
   protected readonly desplegableAlergenosAbierto = signal(false);
 
   protected readonly formulario = inject(FormBuilder).nonNullable.group({
@@ -75,7 +93,8 @@ export class PaginaEditarProducto {
   /** Cierra el desplegable de alérgenos cuando el foco sale de él. */
   protected cerrarDesplegableAlergenos(evento: FocusEvent): void {
     const contenedor = evento.currentTarget as HTMLElement;
-    if (!contenedor.contains(evento.relatedTarget as Node | null)) this.desplegableAlergenosAbierto.set(false);
+    if (!contenedor.contains(evento.relatedTarget as Node | null))
+      this.desplegableAlergenosAbierto.set(false);
   }
 
   protected guardarProducto(): void {
@@ -87,20 +106,39 @@ export class PaginaEditarProducto {
     const id = this.esNuevo() ? textoAIdentificador(valores.nombre) : this.id();
     const productoAnterior: Partial<Producto> = this.producto() ?? {};
     const precioRedondeado = Math.round(valores.precio * 100) / 100;
-    const productoGuardado = { ...productoAnterior, ...valores, id, precio: precioRedondeado } as Producto;
-    this.servicioProductos.guardar(productoGuardado).subscribe(() => {
-      this.cambiosGuardados.set(true);
-      this.formulario.markAsPristine();
-      if (this.esNuevo()) this.enrutador.navigate(['/admin/carta', id]);
+    const productoGuardado = {
+      ...productoAnterior,
+      ...valores,
+      id,
+      precio: precioRedondeado,
+    } as Producto;
+    this.guardando.set(true);
+    this.errorGuardado.set(null);
+    this.servicioProductos.guardar(productoGuardado).subscribe({
+      next: () => {
+        this.guardando.set(false);
+        this.cambiosGuardados.set(true);
+        this.formulario.markAsPristine();
+        if (this.esNuevo()) this.enrutador.navigate(['/admin/carta', id]);
+      },
+      error: (errorGuardando: Error) => {
+        this.guardando.set(false);
+        this.errorGuardado.set(errorGuardando.message);
+      },
     });
   }
 
   protected retirarProducto(): void {
-    this.servicioProductos.retirar(this.id()).subscribe(() => this.enrutador.navigateByUrl('/admin/carta'));
+    this.servicioProductos.retirar(this.id()).subscribe({
+      next: () => this.enrutador.navigateByUrl('/admin/carta'),
+      error: (errorRetirando: Error) => this.errorGuardado.set(errorRetirando.message),
+    });
   }
 
   protected reactivarEnCarta(): void {
-    this.servicioProductos.cambiarEstado([this.id()], 'disponible', 'En servicio').subscribe();
+    this.servicioProductos.cambiarEstado([this.id()], 'disponible', 'En servicio').subscribe({
+      error: (errorReactivando: Error) => this.errorGuardado.set(errorReactivando.message),
+    });
   }
 
   protected campoInvalido(nombreCampo: keyof typeof this.formulario.controls): boolean {

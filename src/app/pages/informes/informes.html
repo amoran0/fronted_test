@@ -1,5 +1,11 @@
 <app-cabecera-pagina titulo="Informes" subtitulo="Ventas del día" />
 
+@if (error(); as mensajeError) {
+  <app-aviso tono="peligro" titulo="No se ha podido cargar el informe">{{ mensajeError }}</app-aviso>
+} @else if (cargando()) {
+  <p class="atenuado">Cargando informe…</p>
+}
+
 @if (metricas(); as metricasDia) {
   <div class="indicadores">
     <app-tarjeta-indicador [etiqueta]="'Ventas del día · ' + formatearFecha(metricasDia.fecha)" [valor]="formatearEuros(metricasDia.ventas)" pista="Solo pedidos entregados" />

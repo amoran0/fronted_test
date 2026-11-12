@@ -56,3 +56,6 @@
     grid-template-columns: 1fr;
   }
 }
+.cupon__acciones {
+  gap: 4px;
+}

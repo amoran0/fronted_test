@@ -99,12 +99,16 @@
       El precio vigente se fija al crear cada pedido. Los cambios futuros no alteran los pedidos anteriores.
     </app-aviso>
 
-    @if (cambiosGuardados() && formulario.pristine) {
+    @if (errorGuardado(); as mensajeErrorGuardado) {
+      <app-aviso tono="peligro" titulo="No se han podido guardar los cambios">{{ mensajeErrorGuardado }}</app-aviso>
+    } @else if (cambiosGuardados() && formulario.pristine) {
       <app-aviso tono="exito">Cambios guardados.</app-aviso>
     }
 
     <div class="fila">
-      <button type="submit" class="boton boton--primario">{{ esNuevo() ? 'Crear producto' : 'Guardar cambios' }}</button>
+      <button type="submit" class="boton boton--primario" [disabled]="guardando()">
+        {{ guardando() ? 'Guardando…' : esNuevo() ? 'Crear producto' : 'Guardar cambios' }}
+      </button>
       <a class="boton boton--cancelar" routerLink="/admin/carta">Cancelar</a>
     </div>
   </form>

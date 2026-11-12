@@ -19,6 +19,8 @@ export class ServicioPedidos {
 
   private readonly todosLosPedidos = signal<PedidoConCliente[]>([]);
   readonly ultimaActualizacion = signal(new Date());
+  readonly cargando = signal(true);
+  readonly error = signal<string | null>(null);
 
   readonly misPedidos = computed(() =>
     this.todosLosPedidos()
@@ -28,7 +30,9 @@ export class ServicioPedidos {
   readonly pedidoActivo = computed(
     () => this.misPedidos().find((pedido) => ESTADOS_EN_CURSO.includes(pedido.estado)) ?? null,
   );
-  readonly historial = computed(() => this.misPedidos().filter((pedido) => pedido !== this.pedidoActivo()));
+  readonly historial = computed(() =>
+    this.misPedidos().filter((pedido) => pedido !== this.pedidoActivo()),
+  );
 
   /** Cola del barista: primero por estado, después por antigüedad. */
   readonly cola = computed(() =>
@@ -40,7 +44,9 @@ export class ServicioPedidos {
           pedidoA.fecha.localeCompare(pedidoB.fecha),
       ),
   );
-  readonly pendientes = computed(() => this.cola().filter((pedido) => pedido.estado === 'pendiente'));
+  readonly pendientes = computed(() =>
+    this.cola().filter((pedido) => pedido.estado === 'pendiente'),
+  );
   readonly pendienteMasAntiguo = computed(() => this.pendientes()[0] ?? null);
   readonly cantidadPorEstado = computed(() => ({
     pendiente: this.pendientes().length,
@@ -52,10 +58,25 @@ export class ServicioPedidos {
     this.cargar();
   }
 
+  /**
+   * Pide los pedidos a la API. Con datos simulados, a partir de la segunda carga se devuelven
+   * los pedidos actuales para no perder los cambios hechos en esta sesión.
+   */
   cargar(): void {
-    this.api.obtener('/pedidos', () => PEDIDOS_SIMULADOS).subscribe((pedidosRecibidos) => {
-      this.todosLosPedidos.set(pedidosRecibidos);
-      this.ultimaActualizacion.set(new Date());
+    this.cargando.set(true);
+    const generarPedidosSimulados = () =>
+      this.todosLosPedidos().length ? this.todosLosPedidos() : PEDIDOS_SIMULADOS;
+    this.api.obtener<PedidoConCliente[]>('/pedidos', generarPedidosSimulados).subscribe({
+      next: (pedidosRecibidos) => {
+        this.todosLosPedidos.set(pedidosRecibidos);
+        this.ultimaActualizacion.set(new Date());
+        this.error.set(null);
+        this.cargando.set(false);
+      },
+      error: (errorCarga: Error) => {
+        this.error.set(errorCarga.message);
+        this.cargando.set(false);
+      },
     });
   }
 
@@ -73,7 +94,9 @@ export class ServicioPedidos {
       .pipe(
         tap((pedidoActualizado) =>
           this.todosLosPedidos.update((pedidos) =>
-            pedidos.map((pedido) => (pedido.id === id ? { ...pedido, estado: pedidoActualizado.estado } : pedido)),
+            pedidos.map((pedido) =>
+              pedido.id === id ? { ...pedido, estado: pedidoActualizado.estado } : pedido,
+            ),
           ),
         ),
       );
@@ -93,7 +116,10 @@ export class ServicioPedidos {
   /** Crea el pedido a partir del carrito con el descuento ya aplicado. */
   confirmar(): Observable<Pedido> {
     const pedidosExistentes = this.todosLosPedidos();
-    const ultimoNumero = Math.max(0, ...pedidosExistentes.map((pedido) => Number(pedido.codigo.split('-')[1])));
+    const ultimoNumero = Math.max(
+      0,
+      ...pedidosExistentes.map((pedido) => Number(pedido.codigo.split('-')[1])),
+    );
     const ultimoTurno = Math.max(
       0,
       ...pedidosExistentes
@@ -106,11 +132,7 @@ export class ServicioPedidos {
       turno: 'A-' + (ultimoTurno + 1),
       fecha: new Date().toISOString(),
       clienteId: this.autenticacion.usuario()?.id ?? 'anonimo',
-      lineas: this.servicioCarrito.validas().map((linea) => ({
-        nombre: linea.producto.nombre,
-        cantidad: linea.cantidad,
-        precioUnitario: linea.precioUnitario,
-      })),
+      lineas: this.servicioCarrito.validas().map((linea) => linea.aLineaDePedido()),
       subtotal: this.servicioCarrito.subtotal(),
       descuento: this.servicioCarrito.descuento() ?? undefined,
       total: this.servicioCarrito.total(),
@@ -118,11 +140,13 @@ export class ServicioPedidos {
       pagado: true,
       alergiasDeclaradas: null,
     };
-    return this.api.crear<Pedido>('/pedidos', pedidoNuevo, () => pedidoNuevo).pipe(
-      tap(() => {
-        this.todosLosPedidos.update((pedidos) => [pedidoNuevo, ...pedidos]);
-        this.servicioCarrito.vaciar();
-      }),
-    );
+    return this.api
+      .crear<Pedido>('/pedidos', pedidoNuevo, () => pedidoNuevo)
+      .pipe(
+        tap(() => {
+          this.todosLosPedidos.update((pedidos) => [pedidoNuevo, ...pedidos]);
+          this.servicioCarrito.vaciar();
+        }),
+      );
   }
 }

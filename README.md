@@ -29,14 +29,15 @@ La barra lateral cambia de menú según el rol, y los guards impiden entrar en v
 
 ```
 src/app
-├── models         → interfaces del dominio (producto.ts, pedido.ts, cupon.ts, usuario.ts, informe.ts)
+├── models         → interfaces del dominio (producto.ts, pedido.ts, cupon.ts, usuario.ts, informe.ts, pagina.ts)
+│                    y clases (descuento.ts, linea-carrito.ts)
 ├── services       → datos y autenticación (auth, producto, carrito, pedido, cupon, informe, api) + mock-data.ts
 ├── components     → reutilizables: app-shell, sidebar, footer, page-header, product-card, status-badge,
 │                    alert, kpi-card, quantity-stepper, filter-chips, search-input, icon
 ├── pages          → una carpeta por vista: carta, detalle-producto, acceder, informacion, realiza-pedido,
 │                    confirmacion-pedido, mis-pedidos, cola-pedidos, disponibilidad, gestion-carta,
 │                    editar-producto, cupones, cupones-solicitudes, informes
-├── guards         → auth.guard.ts (sesión), role.guard.ts (rol, vía `data.roles` de la ruta)
+├── guards         → guarda-rol.ts (sesión y rol, vía `data.roles` de la ruta), guarda-sesion.ts (solo invitados)
 ├── interceptors   → auth.interceptor.ts (añade `Authorization: Bearer <token>`; cierra sesión con 401)
 ├── utils          → calculos.ts (IVA, descuentos), validaciones.ts (DNI, cupones, email),
 │                    formato.ts + euro.pipe.ts, negocio.ts (datos del local)
@@ -56,6 +57,26 @@ src/environments   → URL de la API (desarrollo / producción) y `useMocks`
 - Flujo del pedido: pendiente → en preparación → listo → entregado. Solo se cancela si está pendiente.
 - "Retirar" un producto es una baja lógica: desaparece de la carta pero se conserva en el historial.
 - Los informes cuentan solo pedidos entregados.
+- Un cupón ya canjeado no se puede eliminar (se desactiva); una categoría con productos tampoco.
+
+## Clases de dominio (POO)
+
+- `models/descuento.ts`: clase abstracta `Descuento` con las subclases `DescuentoPorcentaje`,
+  `DescuentoImporteFijo` y `DescuentoSocioFitZone` (hereda de `DescuentoPorcentaje`). Cada una
+  redefine `calcularImporte()` / `describir()`; el carrito compara cupón y socio con el mismo método `aplicar()`.
+- `models/linea-carrito.ts`: clase `LineaCarrito` con `total`, `esCobrable` y `aLineaDePedido()`.
+
+## Comunicación con la API
+
+- `ServicioApi` centraliza GET, POST, PUT, PATCH y DELETE con `HttpClient`. Los filtros y la paginación
+  se envían como parámetros de la URL (`HttpParams`) y los errores se traducen a un mensaje para el usuario
+  (usa el `message` que devuelva el servidor).
+- La carta pide `GET /productos?nombre=&grupo=&estado=&precioMax=&sinAlergenos=&page=&size=` y espera
+  una página con el formato de Spring (`content`, `number`, `size`, `totalElements`, `totalPages`).
+  Los nombres de los parámetros están en `utils/filtros-carta.ts`.
+- **Pantalla destacada**: la cola de pedidos del barista se recarga sola cada 15 s; *Mis pedidos*
+  consulta el estado del turno cada 30 s mientras haya un pedido en curso.
+- Registro de clientes: `POST /auth/registro` (`{ nombre, email, contrasena }` → `{ token, usuario }`).
 
 ## Conectar la API real
 

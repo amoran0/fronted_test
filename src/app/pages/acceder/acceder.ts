@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Aviso } from '../../components/aviso/aviso';
 import { Icono } from '../../components/icono/icono';
 import { CabeceraPagina } from '../../components/cabecera-pagina/cabecera-pagina';
@@ -10,7 +10,7 @@ import { entorno } from '../../../entornos/entorno';
 
 @Component({
   selector: 'app-pagina-acceder',
-  imports: [ReactiveFormsModule, CabeceraPagina, Aviso, Icono],
+  imports: [ReactiveFormsModule, CabeceraPagina, Aviso, Icono, RouterLink],
   templateUrl: './acceder.html',
   styleUrl: './acceder.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,7 +40,8 @@ export class PaginaAcceder {
     this.enviando.set(true);
     this.error.set(null);
     this.autenticacion.iniciarSesion(this.formulario.getRawValue()).subscribe({
-      next: (sesion) => this.enrutador.navigateByUrl(this.volver() || INICIO_POR_ROL[sesion.usuario.rol]),
+      next: (sesion) =>
+        this.enrutador.navigateByUrl(this.volver() || INICIO_POR_ROL[sesion.usuario.rol]),
       error: (errorInicio: Error) => {
         this.error.set(errorInicio.message || 'No se ha podido iniciar sesión.');
         this.enviando.set(false);

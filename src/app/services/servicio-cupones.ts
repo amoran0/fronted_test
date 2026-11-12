@@ -16,7 +16,9 @@ export class ServicioCupones {
     this.cuponesCargados().filter((cupon) => ['activo', 'personal'].includes(this.estado(cupon))),
   );
   readonly activos = computed(() => this.vigentes().length);
-  readonly canjesMes = computed(() => this.vigentes().reduce((totalCanjes, cupon) => totalCanjes + cupon.usos, 0));
+  readonly canjesMes = computed(() =>
+    this.vigentes().reduce((totalCanjes, cupon) => totalCanjes + cupon.usos, 0),
+  );
   readonly descuentoConcedido = signal(428.6);
 
   constructor() {
@@ -44,10 +46,13 @@ export class ServicioCupones {
   crear(cupon: Cupon): Observable<Cupon> {
     return this.api
       .crear<Cupon>('/cupones', cupon, () => {
-        if (this.buscar(cupon.codigo)) throw new Error(`Ya existe un cupón con el código ${cupon.codigo}.`);
+        if (this.buscar(cupon.codigo))
+          throw new Error(`Ya existe un cupón con el código ${cupon.codigo}.`);
         return cupon;
       })
-      .pipe(tap((cuponCreado) => this.cuponesCargados.update((cupones) => [cuponCreado, ...cupones])));
+      .pipe(
+        tap((cuponCreado) => this.cuponesCargados.update((cupones) => [cuponCreado, ...cupones])),
+      );
   }
 
   /** Guarda los cambios de un cupón existente (conserva sus usos). */
@@ -60,7 +65,32 @@ export class ServicioCupones {
       .pipe(
         tap((cuponActualizado) =>
           this.cuponesCargados.update((cupones) =>
-            cupones.map((cupon) => (cupon.codigo === cuponActualizado.codigo ? cuponActualizado : cupon)),
+            cupones.map((cupon) =>
+              cupon.codigo === cuponActualizado.codigo ? cuponActualizado : cupon,
+            ),
+          ),
+        ),
+      );
+  }
+
+  /**
+   * Elimina un cupón (DELETE). Solo se permite si nunca se ha canjeado:
+   * los cupones usados se desactivan para conservar el historial de pedidos.
+   */
+  eliminar(codigo: string): Observable<void> {
+    return this.api
+      .eliminar<void>(`/cupones/${codigo}`, () => {
+        const cupon = this.buscar(codigo);
+        if (!cupon) throw new Error(`No existe el cupón ${codigo}.`);
+        if (cupon.usos > 0)
+          throw new Error(
+            `${codigo} ya se ha canjeado ${cupon.usos} veces: desactívalo en lugar de eliminarlo.`,
+          );
+      })
+      .pipe(
+        tap(() =>
+          this.cuponesCargados.update((cupones) =>
+            cupones.filter((cupon) => cupon.codigo !== codigo),
           ),
         ),
       );

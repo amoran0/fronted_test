@@ -2,6 +2,12 @@
   <a class="boton boton--primario" routerLink="/carta"><app-icono nombre="mas" /> Nuevo pedido</a>
 </app-cabecera-pagina>
 
+@if (servicioPedidos.error(); as mensajeError) {
+  <app-aviso tono="peligro" titulo="No se han podido cargar tus pedidos">{{ mensajeError }}</app-aviso>
+} @else if (servicioPedidos.cargando() && !servicioPedidos.misPedidos().length) {
+  <p class="atenuado">Cargando tus pedidos…</p>
+}
+
 @if (servicioPedidos.pedidoActivo(); as pedidoActivo) {
   <article class="tarjeta tarjeta--amplia pila pedido-activo">
     <div class="tarjeta__cabecera">
@@ -51,7 +57,12 @@
     </div>
 
     @if (pedidoActivo.estado === 'pendiente') {
-      <button type="button" class="boton boton--cancelar" (click)="cancelarPedido(pedidoActivo)">Cancelar pedido</button>
+      @if (errorCancelacion(); as mensajeErrorCancelacion) {
+        <app-aviso tono="peligro" titulo="No se ha podido cancelar">{{ mensajeErrorCancelacion }}</app-aviso>
+      }
+      <button type="button" class="boton boton--cancelar" (click)="cancelarPedido(pedidoActivo)" [disabled]="cancelando()">
+        {{ cancelando() ? 'Cancelando…' : 'Cancelar pedido' }}
+      </button>
     } @else {
       <app-aviso tono="advertencia" titulo="Este pedido ya no se puede cancelar">
         La preparación ha comenzado. Si necesitas ayuda, consulta al personal de barra.

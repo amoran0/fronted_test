@@ -1,8 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Aviso } from '../../components/aviso/aviso';
+import { Aviso, ResultadoOperacion } from '../../components/aviso/aviso';
 import { Icono } from '../../components/icono/icono';
 import { TarjetaIndicador } from '../../components/tarjeta-indicador/tarjeta-indicador';
 import { CabeceraPagina } from '../../components/cabecera-pagina/cabecera-pagina';
@@ -24,7 +30,16 @@ function reglasCupon(grupoFormulario: AbstractControl): ValidationErrors | null 
 
 @Component({
   selector: 'app-pagina-cupones',
-  imports: [ReactiveFormsModule, CabeceraPagina, TarjetaIndicador, CampoBusqueda, EtiquetaEstado, Aviso, Icono, RouterLink],
+  imports: [
+    ReactiveFormsModule,
+    CabeceraPagina,
+    TarjetaIndicador,
+    CampoBusqueda,
+    EtiquetaEstado,
+    Aviso,
+    Icono,
+    RouterLink,
+  ],
   templateUrl: './cupones.html',
   styleUrl: './cupones.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,7 +59,10 @@ export class PaginaCupones {
     return this.servicioCupones
       .cupones()
       .filter(
-        (cupon) => !busqueda || cupon.codigo.includes(busqueda) || cupon.descripcion.toUpperCase().includes(busqueda),
+        (cupon) =>
+          !busqueda ||
+          cupon.codigo.includes(busqueda) ||
+          cupon.descripcion.toUpperCase().includes(busqueda),
       );
   });
 
@@ -70,7 +88,9 @@ export class PaginaCupones {
     },
     { validators: reglasCupon },
   );
-  private readonly estadoFormulario = toSignal(this.formulario.statusChanges, { initialValue: this.formulario.status });
+  private readonly estadoFormulario = toSignal(this.formulario.statusChanges, {
+    initialValue: this.formulario.status,
+  });
   protected readonly formularioValido = computed(() => this.estadoFormulario() === 'VALID');
 
   protected textoVigencia(cupon: Cupon): string {
@@ -112,7 +132,9 @@ export class PaginaCupones {
   private irAlFormulario(): void {
     const formularioCupon = document.getElementById('nuevo-cupon');
     formularioCupon?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    formularioCupon?.querySelector<HTMLInputElement>('input:not([readonly])')?.focus({ preventScroll: true });
+    formularioCupon
+      ?.querySelector<HTMLInputElement>('input:not([readonly])')
+      ?.focus({ preventScroll: true });
   }
 
   protected guardarCupon(): void {
@@ -124,9 +146,13 @@ export class PaginaCupones {
     }
     const valores = this.formulario.getRawValue();
     const codigo = valores.codigo.trim().toUpperCase();
-    const textoDestinatario = valores.destinatario === 'personal' ? valores.email : 'todos los productos';
-    const textoDescuento = valores.tipo === 'porcentaje' ? valores.valor + ' %' : formatearEuros(valores.valor);
-    const textoMinimo = valores.minimoCompra ? ' · mín. ' + formatearEuros(valores.minimoCompra) : '';
+    const textoDestinatario =
+      valores.destinatario === 'personal' ? valores.email : 'todos los productos';
+    const textoDescuento =
+      valores.tipo === 'porcentaje' ? valores.valor + ' %' : formatearEuros(valores.valor);
+    const textoMinimo = valores.minimoCompra
+      ? ' · mín. ' + formatearEuros(valores.minimoCompra)
+      : '';
     const cupon: Cupon = {
       codigo,
       tipo: valores.tipo,
@@ -141,13 +167,32 @@ export class PaginaCupones {
       activo: valores.activo,
     };
     const esEdicion = !!this.codigoEnEdicion();
-    (esEdicion ? this.servicioCupones.actualizar(cupon) : this.servicioCupones.crear(cupon)).subscribe({
+    (esEdicion
+      ? this.servicioCupones.actualizar(cupon)
+      : this.servicioCupones.crear(cupon)
+    ).subscribe({
       next: () => {
         this.mensaje.set(`Cupón ${codigo} ${esEdicion ? 'actualizado' : 'creado'}.`);
         this.codigoEnEdicion.set(null);
         this.formulario.reset();
       },
       error: (errorGuardado: Error) => this.error.set(errorGuardado.message),
+    });
+  }
+
+  /** Mensaje de la última eliminación (éxito o error), mostrado sobre la lista. */
+  protected readonly resultadoEliminacion = signal<ResultadoOperacion | null>(null);
+
+  protected eliminarCupon(cupon: Cupon): void {
+    if (!confirm(`¿Eliminar el cupón ${cupon.codigo}? Esta acción no se puede deshacer.`)) return;
+    this.resultadoEliminacion.set(null);
+    this.servicioCupones.eliminar(cupon.codigo).subscribe({
+      next: () => {
+        if (this.codigoEnEdicion() === cupon.codigo) this.empezarCuponNuevo();
+        this.resultadoEliminacion.set({ tono: 'exito', texto: `Cupón ${cupon.codigo} eliminado.` });
+      },
+      error: (errorEliminando: Error) =>
+        this.resultadoEliminacion.set({ tono: 'peligro', texto: errorEliminando.message }),
     });
   }
 

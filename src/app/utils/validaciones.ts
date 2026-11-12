@@ -1,5 +1,5 @@
 import { Cupon, ResultadoValidacion } from '../models/cupon';
-import { descuentoPorcentaje, redondear } from './calculos';
+import { crearDescuentoDeCupon } from '../models/descuento';
 import { formatearEuros, formatearFecha } from './formato';
 
 const LETRAS_DNI = 'TRWAGMYFPDXBNJZSQVHLCKE';
@@ -11,6 +11,11 @@ export function esDniValido(dni: string): boolean {
   if (!partesDni) return false;
   const [, numero, letra] = partesDni;
   return LETRAS_DNI[Number(numero) % 23] === letra;
+}
+
+/** Contraseña de registro: al menos 8 caracteres, con una letra y un número. */
+export function esContrasenaSegura(contrasena: string): boolean {
+  return contrasena.length >= 8 && /[a-zA-ZñÑ]/.test(contrasena) && /\d/.test(contrasena);
 }
 
 /** Código de cupón: letras, números (y Ñ), entre 4 y 16 caracteres. */
@@ -25,23 +30,34 @@ export interface ContextoCupon {
 }
 
 /** Comprueba existencia, estado, vigencia, usos, mínimo de compra y destinatario. */
-export function validarCupon(cupon: Cupon | undefined, contexto: ContextoCupon): ResultadoValidacion {
+export function validarCupon(
+  cupon: Cupon | undefined,
+  contexto: ContextoCupon,
+): ResultadoValidacion {
   if (!cupon) return { valido: false, motivo: 'El código no existe.' };
   const hoy = contexto.fecha ?? new Date();
   if (!cupon.activo) return { valido: false, motivo: `${cupon.codigo} está desactivado.` };
   if (new Date(cupon.desde) > hoy)
-    return { valido: false, motivo: `${cupon.codigo} es válido desde el ${formatearFecha(cupon.desde)}.` };
+    return {
+      valido: false,
+      motivo: `${cupon.codigo} es válido desde el ${formatearFecha(cupon.desde)}.`,
+    };
   if (cupon.hasta && finDelDia(cupon.hasta) < hoy)
-    return { valido: false, motivo: `${cupon.codigo} venció el ${formatearFecha(cupon.hasta)}. Prueba otro código.` };
-  if (cupon.usos >= cupon.usosMax) return { valido: false, motivo: `${cupon.codigo} ya no tiene usos disponibles.` };
+    return {
+      valido: false,
+      motivo: `${cupon.codigo} venció el ${formatearFecha(cupon.hasta)}. Prueba otro código.`,
+    };
+  if (cupon.usos >= cupon.usosMax)
+    return { valido: false, motivo: `${cupon.codigo} ya no tiene usos disponibles.` };
   if (contexto.subtotal < cupon.minimoCompra)
-    return { valido: false, motivo: `Requiere una compra mínima de ${formatearEuros(cupon.minimoCompra)}.` };
+    return {
+      valido: false,
+      motivo: `Requiere una compra mínima de ${formatearEuros(cupon.minimoCompra)}.`,
+    };
   if (cupon.email && cupon.email.toLowerCase() !== (contexto.email ?? '').toLowerCase())
     return { valido: false, motivo: 'Este cupón es personal y no corresponde a tu email.' };
 
-  const descuento =
-    cupon.tipo === 'porcentaje' ? descuentoPorcentaje(contexto.subtotal, cupon.valor) : redondear(cupon.valor);
-  return { valido: true, descuento: Math.min(descuento, contexto.subtotal) };
+  return { valido: true, descuento: crearDescuentoDeCupon(cupon).importePara(contexto.subtotal) };
 }
 
 function finDelDia(iso: string): Date {

@@ -44,20 +44,29 @@
 </section>
 
 <div class="resumen">
-  <strong>{{ productosFiltrados().length }} productos</strong>
+  <strong>{{ resultado()?.totalElements ?? 0 }} productos</strong>
+  @if (resultado(); as paginaResultados) {
+    @if (paginaResultados.totalPages > 1) {
+      <span class="t-pequeno atenuado">Página {{ paginaResultados.number + 1 }} de {{ paginaResultados.totalPages }}</span>
+    }
+  }
 </div>
 
-@if (servicioProductos.cargando()) {
+@if (error(); as mensajeError) {
+  <app-aviso tono="peligro" titulo="No se ha podido cargar la carta">{{ mensajeError }}</app-aviso>
+} @else if (cargando() && !resultado()) {
   <p class="atenuado">Cargando la carta…</p>
-} @else if (productosFiltrados().length) {
-  <ul class="rejilla">
-    @for (producto of productosFiltrados(); track producto.id) {
+} @else if (resultado()?.content?.length) {
+  <ul class="rejilla" [class.esta-cargando]="cargando()" [attr.aria-busy]="cargando()">
+    @for (producto of resultado()!.content; track producto.id) {
       <li>
         <app-tarjeta-producto [producto]="producto" [nombreCategoria]="servicioProductos.nombreCategoria(producto.categoriaId)" />
       </li>
     }
   </ul>
-  <p class="final t-pequeno atenuado">Has visto toda la carta · {{ productosFiltrados().length }} productos</p>
+  <div class="final">
+    <app-paginador [paginaActual]="resultado()!.number" [totalPaginas]="resultado()!.totalPages" (cambiarPagina)="irAPagina($event)" />
+  </div>
 } @else {
   <div class="vacio tarjeta">
     <strong class="t-titulo-3">No hay productos con estos filtros</strong>

@@ -21,6 +21,7 @@ const CONFIGURACION_POR_ROL: Record<Rol, ConfiguracionRol> = {
       { texto: 'Carta', ruta: '/carta' },
       { texto: 'Cómo pedir', ruta: '/como-pedir' },
       { texto: 'Acceder', ruta: '/acceder' },
+      { texto: 'Crear cuenta', ruta: '/registro' },
     ],
   },
   cliente: {
@@ -67,7 +68,9 @@ export class BarraLateral {
 
   protected readonly negocio = NEGOCIO;
   protected readonly localAbierto = estaAbierto();
-  protected readonly configuracionRol = computed(() => CONFIGURACION_POR_ROL[this.autenticacion.rol()]);
+  protected readonly configuracionRol = computed(
+    () => CONFIGURACION_POR_ROL[this.autenticacion.rol()],
+  );
   protected readonly siguienteTurno = computed(() => {
     const ultimoTurno = Math.max(
       0,

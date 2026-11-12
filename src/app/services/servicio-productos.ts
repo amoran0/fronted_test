@@ -1,9 +1,16 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, forkJoin, tap } from 'rxjs';
 import { ALERGENOS, Alergeno, Categoria, EstadoProducto, Producto } from '../models/producto';
 import { ServicioApi } from './servicio-api';
 import { CATEGORIAS_SIMULADAS, PRODUCTOS_SIMULADOS } from './datos-simulados';
 import { textoAIdentificador } from '../utils/formato';
+import { PaginaResultados } from '../models/pagina';
+import {
+  FiltrosCarta,
+  filtrarProductos,
+  paginar,
+  parametrosDeFiltrosCarta,
+} from '../utils/filtros-carta';
 
 @Injectable({ providedIn: 'root' })
 export class ServicioProductos {
@@ -13,26 +20,59 @@ export class ServicioProductos {
   private readonly categoriasCargadas = signal<Categoria[]>([]);
   private readonly alergenosDisponibles = signal<Alergeno[]>([...ALERGENOS]);
   readonly cargando = signal(true);
+  readonly error = signal<string | null>(null);
 
   readonly productos = this.productosCargados.asReadonly();
   readonly categorias = this.categoriasCargadas.asReadonly();
   readonly alergenos = this.alergenosDisponibles.asReadonly();
   /** Lo que ve el público: todo excepto lo retirado. */
-  readonly carta = computed(() => this.productosCargados().filter((producto) => producto.estado !== 'retirado'));
+  readonly carta = computed(() =>
+    this.productosCargados().filter((producto) => producto.estado !== 'retirado'),
+  );
 
   constructor() {
     this.cargar();
   }
 
+  /** Carga categorías y productos en paralelo; la vista se actualiza cuando llegan ambos. */
   cargar(): void {
     this.cargando.set(true);
-    this.api
-      .obtener('/categorias', () => CATEGORIAS_SIMULADAS)
-      .subscribe((categoriasRecibidas) => this.categoriasCargadas.set(categoriasRecibidas));
-    this.api.obtener('/productos', () => PRODUCTOS_SIMULADOS).subscribe((productosRecibidos) => {
-      this.productosCargados.set(productosRecibidos);
-      this.cargando.set(false);
+    forkJoin({
+      categorias: this.api.obtener('/categorias', () => CATEGORIAS_SIMULADAS),
+      productos: this.api.obtener('/productos', () => PRODUCTOS_SIMULADOS),
+    }).subscribe({
+      next: ({ categorias, productos }) => {
+        this.categoriasCargadas.set(categorias);
+        this.productosCargados.set(productos);
+        this.error.set(null);
+        this.cargando.set(false);
+      },
+      error: (errorCarga: Error) => {
+        this.error.set(errorCarga.message);
+        this.cargando.set(false);
+      },
     });
+  }
+
+  /**
+   * Consulta paginada de la carta pública: los filtros y la página se envían a la API
+   * como parámetros de la URL (`GET /productos?nombre=…&page=0&size=6`).
+   */
+  buscarCarta(
+    filtros: FiltrosCarta,
+    pagina: number,
+    tamanoPagina: number,
+  ): Observable<PaginaResultados<Producto>> {
+    return this.api.obtener(
+      '/productos',
+      () =>
+        paginar(
+          filtrarProductos(this.carta(), this.categoriasCargadas(), filtros),
+          pagina,
+          tamanoPagina,
+        ),
+      parametrosDeFiltrosCarta(filtros, pagina, tamanoPagina),
+    );
   }
 
   porId(id: string): Producto | undefined {
@@ -78,15 +118,42 @@ export class ServicioProductos {
   }
 
   crearCategoria(nombre: string, grupo: Categoria['grupo'] = 'comida'): Observable<Categoria> {
-    const categoria: Categoria = { id: textoAIdentificador(nombre.trim()), nombre: nombre.trim(), grupo };
+    const categoria: Categoria = {
+      id: textoAIdentificador(nombre.trim()),
+      nombre: nombre.trim(),
+      grupo,
+    };
     return this.api
       .crear<Categoria>('/categorias', categoria, () => categoria)
       .pipe(
         tap((categoriaCreada) =>
           this.categoriasCargadas.update((categorias) => [
-            ...categorias.filter((categoriaExistente) => categoriaExistente.id !== categoriaCreada.id),
+            ...categorias.filter(
+              (categoriaExistente) => categoriaExistente.id !== categoriaCreada.id,
+            ),
             categoriaCreada,
           ]),
+        ),
+      );
+  }
+
+  /** Elimina una categoría (DELETE). No se permite si todavía tiene productos asignados. */
+  eliminarCategoria(id: string): Observable<void> {
+    return this.api
+      .eliminar<void>(`/categorias/${id}`, () => {
+        const totalProductos = this.productosCargados().filter(
+          (producto) => producto.categoriaId === id,
+        ).length;
+        if (totalProductos)
+          throw new Error(
+            `La categoría tiene ${totalProductos} productos: muévelos a otra antes de eliminarla.`,
+          );
+      })
+      .pipe(
+        tap(() =>
+          this.categoriasCargadas.update((categorias) =>
+            categorias.filter((categoria) => categoria.id !== id),
+          ),
         ),
       );
   }

@@ -40,3 +40,6 @@
     grid-template-columns: 1fr;
   }
 }
+.tarjeta > app-aviso:not(:last-child) {
+  margin-bottom: 14px;
+}

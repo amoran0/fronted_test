@@ -8,7 +8,7 @@ import { Icono } from '../icono/icono';
  * - Sin él, despliega un campo para escribir el nombre y emite `anadir`.
  */
 @Component({
-  selector: 'app-tarjeta-lista-editable',
+  selector: 'app-tarjeta-anadir',
   imports: [Icono, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display:block' },
@@ -17,9 +17,17 @@ import { Icono } from '../icono/icono';
       <div class="tarjeta__cabecera">
         <h2 class="t-titulo-3">{{ titulo() }}</h2>
         @if (enlaceAnadir()) {
-          <a class="boton boton--discreto boton--pequeno" [routerLink]="enlaceAnadir()"><app-icono nombre="mas" /> Añadir</a>
+          <a class="boton boton--discreto boton--pequeno" [routerLink]="enlaceAnadir()"
+            ><app-icono nombre="mas" /> Añadir</a
+          >
         } @else if (!creando()) {
-          <button type="button" class="boton boton--discreto boton--pequeno" (click)="creando.set(true)"><app-icono nombre="mas" /> Añadir</button>
+          <button
+            type="button"
+            class="boton boton--discreto boton--pequeno"
+            (click)="creando.set(true)"
+          >
+            <app-icono nombre="mas" /> Añadir
+          </button>
         }
       </div>
       @if (creando()) {
@@ -36,20 +44,41 @@ import { Icono } from '../icono/icono';
             />
           </label>
           <div class="fila acciones">
-            <button type="button" class="boton boton--secundario boton--pequeno" (click)="cancelar()">Cancelar</button>
-            <button type="submit" class="boton boton--primario boton--pequeno" [disabled]="!nombreNuevo().trim()">Guardar</button>
+            <button
+              type="button"
+              class="boton boton--secundario boton--pequeno"
+              (click)="cancelar()"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="boton boton--primario boton--pequeno"
+              [disabled]="!nombreNuevo().trim()"
+            >
+              Guardar
+            </button>
           </div>
         </form>
       }
     </section>
   `,
   styles: `
-    .tarjeta__cabecera:last-child { margin-bottom: 0; }
-    .formulario-nuevo { display: flex; flex-direction: column; gap: 10px; }
-    .acciones { justify-content: flex-end; gap: 8px; }
+    .tarjeta__cabecera:last-child {
+      margin-bottom: 0;
+    }
+    .formulario-nuevo {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .acciones {
+      justify-content: flex-end;
+      gap: 8px;
+    }
   `,
 })
-export class TarjetaListaEditable {
+export class TarjetaAnadir {
   readonly titulo = input.required<string>();
   /** Ruta a la que lleva «Añadir» (si se omite, se usa el campo en línea). */
   readonly enlaceAnadir = input<string | undefined>();

@@ -38,7 +38,9 @@ export class PaginaDetalleProducto {
     }
     const anadido = this.servicioCarrito.anadir(producto);
     this.mensajeAnadido.set(
-      anadido ? `${producto.nombre} añadido a tu pedido.` : 'Has alcanzado el máximo de 15 líneas por pedido.',
+      anadido
+        ? `${producto.nombre} añadido a tu pedido.`
+        : 'Has alcanzado el máximo de 15 líneas por pedido.',
     );
   }
 }

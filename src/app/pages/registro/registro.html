@@ -1,0 +1,48 @@
+<app-cabecera-pagina titulo="Crear cuenta" subtitulo="Regístrate para hacer pedidos y seguir tu turno." />
+
+<form class="tarjeta tarjeta--amplia pila registro" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+  <h2 class="t-titulo-3">Tus datos</h2>
+
+  <label class="campo">
+    <span class="t-etiqueta">Nombre</span>
+    <input class="entrada" type="text" formControlName="nombre" autocomplete="name" [class.es-invalido]="campoInvalido('nombre')" />
+    @if (campoInvalido('nombre')) {
+      <span class="error-campo">Escribe tu nombre (entre 2 y 60 caracteres).</span>
+    }
+  </label>
+
+  <label class="campo">
+    <span class="t-etiqueta">Email</span>
+    <input class="entrada" type="email" formControlName="email" autocomplete="email" [class.es-invalido]="campoInvalido('email')" />
+    @if (campoInvalido('email')) {
+      <span class="error-campo">Introduce un email válido.</span>
+    }
+  </label>
+
+  <label class="campo">
+    <span class="t-etiqueta">Contraseña</span>
+    <input class="entrada" type="password" formControlName="contrasena" autocomplete="new-password"
+      [class.es-invalido]="campoInvalido('contrasena')" />
+    @if (campoInvalido('contrasena')) {
+      <span class="error-campo">Mínimo 8 caracteres, con al menos una letra y un número.</span>
+    }
+  </label>
+
+  <label class="campo">
+    <span class="t-etiqueta">Repite la contraseña</span>
+    <input class="entrada" type="password" formControlName="repetirContrasena" autocomplete="new-password"
+      [class.es-invalido]="formulario.controls.repetirContrasena.touched && (formulario.controls.repetirContrasena.invalid || formulario.hasError('contrasenasDistintas'))" />
+    @if (formulario.controls.repetirContrasena.touched && formulario.hasError('contrasenasDistintas')) {
+      <span class="error-campo">Las contraseñas no coinciden.</span>
+    }
+  </label>
+
+  @if (error(); as mensajeError) {
+    <app-aviso tono="peligro" titulo="No se ha podido crear la cuenta">{{ mensajeError }}</app-aviso>
+  }
+
+  <button class="boton boton--primario" type="submit" [disabled]="enviando()">
+    <app-icono nombre="usuario" /> {{ enviando() ? 'Creando cuenta…' : 'Crear cuenta' }}
+  </button>
+  <p class="t-pequeno atenuado">¿Ya tienes cuenta? <a routerLink="/acceder">Inicia sesión</a></p>
+</form>

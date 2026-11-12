@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { Aviso } from '../../components/aviso/aviso';
+import { Aviso, ResultadoOperacion, TonoAviso } from '../../components/aviso/aviso';
 import { Icono } from '../../components/icono/icono';
 import { CabeceraPagina } from '../../components/cabecera-pagina/cabecera-pagina';
 import { CampoBusqueda } from '../../components/campo-busqueda/campo-busqueda';
@@ -29,7 +29,7 @@ export class PaginaDisponibilidad {
   protected readonly categoriaSeleccionada = signal('');
   /** Estado del cambio masivo pendiente de confirmar con un segundo clic. */
   protected readonly cambioMasivoPorConfirmar = signal<EstadoProducto | null>(null);
-  protected readonly mensaje = signal<string | null>(null);
+  protected readonly resultado = signal<ResultadoOperacion | null>(null);
 
   protected readonly productosFiltrados = computed(() => {
     const busqueda = this.textoBusqueda().trim().toLowerCase();
@@ -37,7 +37,8 @@ export class PaginaDisponibilidad {
       .productos()
       .filter(
         (producto) =>
-          (!this.categoriaSeleccionada() || producto.categoriaId === this.categoriaSeleccionada()) &&
+          (!this.categoriaSeleccionada() ||
+            producto.categoriaId === this.categoriaSeleccionada()) &&
           (!busqueda || producto.nombre.toLowerCase().includes(busqueda)),
       );
   });
@@ -55,9 +56,10 @@ export class PaginaDisponibilidad {
   });
 
   protected cambiarEstado(producto: Producto, estado: EstadoProducto): void {
-    this.servicioProductos
-      .cambiarEstado([producto.id], estado, NOTA_POR_ESTADO[estado])
-      .subscribe(() => this.mensaje.set(`${producto.nombre} marcado como ${estado}.`));
+    this.servicioProductos.cambiarEstado([producto.id], estado, NOTA_POR_ESTADO[estado]).subscribe({
+      next: () => this.mostrarResultado('exito', `${producto.nombre} marcado como ${estado}.`),
+      error: (errorCambio: Error) => this.mostrarResultado('peligro', errorCambio.message),
+    });
   }
 
   /** Cambio masivo: requiere un segundo clic de confirmación. */
@@ -67,22 +69,36 @@ export class PaginaDisponibilidad {
       return;
     }
     const ids = this.productosEditables().map((producto) => producto.id);
-    this.servicioProductos.cambiarEstado(ids, estado, NOTA_POR_ESTADO[estado]).subscribe(() => {
-      const textoEstado = estado === 'disponible' ? 'disponibles' : 'agotados';
-      this.mensaje.set(`${ids.length} productos marcados como ${textoEstado}.`);
-      this.cambioMasivoPorConfirmar.set(null);
+    this.servicioProductos.cambiarEstado(ids, estado, NOTA_POR_ESTADO[estado]).subscribe({
+      next: () => {
+        const textoEstado = estado === 'disponible' ? 'disponibles' : 'agotados';
+        this.mostrarResultado('exito', `${ids.length} productos marcados como ${textoEstado}.`);
+        this.cambioMasivoPorConfirmar.set(null);
+      },
+      error: (errorCambio: Error) => this.mostrarResultado('peligro', errorCambio.message),
     });
   }
 
   protected registrarReposicion(): void {
-    const productosAgotados = this.servicioProductos.productos().filter((producto) => producto.estado === 'agotado');
+    const productosAgotados = this.servicioProductos
+      .productos()
+      .filter((producto) => producto.estado === 'agotado');
     if (!productosAgotados.length) {
-      this.mensaje.set('No hay productos agotados que reponer.');
+      this.mostrarResultado('informacion', 'No hay productos agotados que reponer.');
       return;
     }
     const ids = productosAgotados.map((producto) => producto.id);
-    this.servicioProductos.cambiarEstado(ids, 'disponible', NOTA_POR_ESTADO.disponible).subscribe(() =>
-      this.mensaje.set(`Reposición registrada · ${productosAgotados.length} productos vuelven a estar disponibles.`),
-    );
+    this.servicioProductos.cambiarEstado(ids, 'disponible', NOTA_POR_ESTADO.disponible).subscribe({
+      next: () =>
+        this.mostrarResultado(
+          'exito',
+          `Reposición registrada · ${productosAgotados.length} productos vuelven a estar disponibles.`,
+        ),
+      error: (errorCambio: Error) => this.mostrarResultado('peligro', errorCambio.message),
+    });
+  }
+
+  private mostrarResultado(tono: TonoAviso, texto: string): void {
+    this.resultado.set({ tono, texto });
   }
 }
