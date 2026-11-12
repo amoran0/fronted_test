@@ -27,6 +27,7 @@ const CONFIGURACION_POR_ROL: Record<Rol, ConfiguracionRol> = {
     etiqueta: 'Cliente',
     icono: 'usuario',
     menu: [
+      { texto: 'Carta', ruta: '/carta' },
       { texto: 'Nuevo pedido', ruta: '/pedido' },
       { texto: 'Mis pedidos', ruta: '/mis-pedidos' },
       { texto: 'Mi perfil', ruta: '/perfil' },
