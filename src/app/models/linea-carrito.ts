@@ -44,12 +44,12 @@ export class LineaCarrito implements LineaPedido {
     return this.opciones.length ? this.opciones.join(' · ') : 'Sin cambios';
   }
 
-  /** Datos mínimos que se envían al crear el pedido. */
-  aLineaDePedido(): { nombre: string; cantidad: number; precioUnitario: number } {
-    return {
-      nombre: this.producto.nombre,
-      cantidad: this.cantidad,
-      precioUnitario: this.precioUnitario,
-    };
+  /**
+   * Línea tal como la espera `POST /pedidos`: solo producto y cantidad.
+   * El precio lo fija el servidor con el vigente (RN-03) y agrupa las líneas del mismo producto (RN-04).
+   * Las opciones (tipo de leche…) son orientativas para el barista y no se envían a la API.
+   */
+  aLineaDePedido(): { productoId: string; cantidad: number } {
+    return { productoId: this.producto.id, cantidad: this.cantidad };
   }
 }

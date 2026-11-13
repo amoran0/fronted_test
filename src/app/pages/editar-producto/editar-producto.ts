@@ -16,7 +16,6 @@ import { EtiquetaEstado } from '../../components/etiqueta-estado/etiqueta-estado
 import { Alergeno, EstadoProducto, Producto } from '../../models/producto';
 import { ServicioProductos } from '../../services/servicio-productos';
 import { PipeEuro } from '../../utils/pipe-euro';
-import { textoAIdentificador } from '../../utils/formato';
 
 @Component({
   selector: 'app-pagina-editar-producto',
@@ -51,7 +50,7 @@ export class PaginaEditarProducto {
 
   protected readonly formulario = inject(FormBuilder).nonNullable.group({
     nombre: ['', [Validators.required, Validators.maxLength(60)]],
-    categoriaId: ['cafe', Validators.required],
+    categoriaId: ['', Validators.required],
     precio: [0, [Validators.required, Validators.min(0.1), Validators.max(99)]],
     estado: ['disponible' as EstadoProducto, Validators.required],
     alergenos: [[] as Alergeno[]],
@@ -103,7 +102,7 @@ export class PaginaEditarProducto {
       return;
     }
     const valores = this.formulario.getRawValue();
-    const id = this.esNuevo() ? textoAIdentificador(valores.nombre) : this.id();
+    const id = this.esNuevo() ? '' : this.id();
     const productoAnterior: Partial<Producto> = this.producto() ?? {};
     const precioRedondeado = Math.round(valores.precio * 100) / 100;
     const productoGuardado = {
@@ -114,12 +113,13 @@ export class PaginaEditarProducto {
     } as Producto;
     this.guardando.set(true);
     this.errorGuardado.set(null);
-    this.servicioProductos.guardar(productoGuardado).subscribe({
-      next: () => {
+    this.servicioProductos.guardar(productoGuardado, this.esNuevo()).subscribe({
+      next: (productoCreado) => {
         this.guardando.set(false);
         this.cambiosGuardados.set(true);
         this.formulario.markAsPristine();
-        if (this.esNuevo()) this.enrutador.navigate(['/admin/carta', id]);
+        // El id del producto nuevo lo genera la API (UUID).
+        if (this.esNuevo()) this.enrutador.navigate(['/admin/carta', productoCreado.id]);
       },
       error: (errorGuardando: Error) => {
         this.guardando.set(false);
@@ -136,7 +136,7 @@ export class PaginaEditarProducto {
   }
 
   protected reactivarEnCarta(): void {
-    this.servicioProductos.cambiarEstado([this.id()], 'disponible', 'En servicio').subscribe({
+    this.servicioProductos.cambiarEstado([this.id()], 'disponible').subscribe({
       error: (errorReactivando: Error) => this.errorGuardado.set(errorReactivando.message),
     });
   }

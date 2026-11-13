@@ -35,8 +35,8 @@
   @if (usuariosDemostracion.length) {
     <aside class="tarjeta tarjeta--amplia pila">
       <h2 class="t-titulo-3">Accesos de demostración</h2>
-      <p class="t-pequeno atenuado">Datos de ejemplo. Contraseña: <strong>demo1234</strong></p>
-      @for (usuarioDemo of usuariosDemostracion; track usuarioDemo.id) {
+      <p class="t-pequeno atenuado">Cuentas de prueba del script de la base de datos.</p>
+      @for (usuarioDemo of usuariosDemostracion; track usuarioDemo.email) {
         <button type="button" class="demo" (click)="entrarComo(usuarioDemo.email, usuarioDemo.contrasena)">
           <span class="insignia insignia--acento">{{ etiquetaPorRol[usuarioDemo.rol] }}</span>
           <span class="expandir">

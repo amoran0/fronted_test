@@ -17,7 +17,8 @@ export const interceptorSesion: HttpInterceptorFn = (peticionOriginal, siguiente
 
   return siguienteManejador(peticion).pipe(
     catchError((error: unknown) => {
-      const sesionCaducada = error instanceof HttpErrorResponse && error.status === 401;
+      // Solo es «sesión caducada» si se envió un token; un 401 en el login es una contraseña incorrecta.
+      const sesionCaducada = error instanceof HttpErrorResponse && error.status === 401 && !!token;
       if (esNuestraApi && sesionCaducada) autenticacion.cerrarSesion();
       return throwError(() => error);
     }),

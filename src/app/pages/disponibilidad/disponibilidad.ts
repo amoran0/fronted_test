@@ -7,13 +7,6 @@ import { EtiquetaEstado } from '../../components/etiqueta-estado/etiqueta-estado
 import { EstadoProducto, Producto } from '../../models/producto';
 import { ServicioProductos } from '../../services/servicio-productos';
 
-/** Nota visible para el barista según el nuevo estado del producto. */
-const NOTA_POR_ESTADO: Record<EstadoProducto, string> = {
-  disponible: 'En servicio',
-  agotado: 'Agotado por el barista',
-  retirado: 'Retirado',
-};
-
 /** El barista abre o agota productos sin tocar la carta administrativa. */
 @Component({
   selector: 'app-pagina-disponibilidad',
@@ -56,7 +49,7 @@ export class PaginaDisponibilidad {
   });
 
   protected cambiarEstado(producto: Producto, estado: EstadoProducto): void {
-    this.servicioProductos.cambiarEstado([producto.id], estado, NOTA_POR_ESTADO[estado]).subscribe({
+    this.servicioProductos.cambiarEstado([producto.id], estado).subscribe({
       next: () => this.mostrarResultado('exito', `${producto.nombre} marcado como ${estado}.`),
       error: (errorCambio: Error) => this.mostrarResultado('peligro', errorCambio.message),
     });
@@ -69,7 +62,7 @@ export class PaginaDisponibilidad {
       return;
     }
     const ids = this.productosEditables().map((producto) => producto.id);
-    this.servicioProductos.cambiarEstado(ids, estado, NOTA_POR_ESTADO[estado]).subscribe({
+    this.servicioProductos.cambiarEstado(ids, estado).subscribe({
       next: () => {
         const textoEstado = estado === 'disponible' ? 'disponibles' : 'agotados';
         this.mostrarResultado('exito', `${ids.length} productos marcados como ${textoEstado}.`);
@@ -88,7 +81,7 @@ export class PaginaDisponibilidad {
       return;
     }
     const ids = productosAgotados.map((producto) => producto.id);
-    this.servicioProductos.cambiarEstado(ids, 'disponible', NOTA_POR_ESTADO.disponible).subscribe({
+    this.servicioProductos.cambiarEstado(ids, 'disponible').subscribe({
       next: () =>
         this.mostrarResultado(
           'exito',

@@ -1,7 +1,8 @@
-/** Configuración de producción. */
+/** Configuración de producción (`ng build`). */
 export const entorno = {
   produccion: true,
-  urlApi: 'https://api.thecoffeeroom.es/v1',
-  /** Con `true` los servicios usan datos de ejemplo en memoria en lugar de la API. */
-  usarDatosSimulados: true,
+  urlApi: 'https://api.thecoffeeroom.es/api/v1',
+  /** En producción siempre contra la API real. */
+  usarDatosSimulados: false,
+  cuentasDemostracion: [] as { rol: string; nombre: string; email: string; contrasena: string }[],
 };

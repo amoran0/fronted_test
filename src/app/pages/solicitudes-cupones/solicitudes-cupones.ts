@@ -6,7 +6,6 @@ import { Icono } from '../../components/icono/icono';
 import { CabeceraPagina } from '../../components/cabecera-pagina/cabecera-pagina';
 import { ResultadoValidacion } from '../../models/cupon';
 import { ServicioCupones } from '../../services/servicio-cupones';
-import { calcularTotal } from '../../utils/calculos';
 import { formatearEuros, fechaHoyIso } from '../../utils/formato';
 
 /** Cupones generados a petición de CineTown y comprobador manual de cupones. */
@@ -38,7 +37,6 @@ export class PaginaSolicitudesCupones {
   protected readonly formularioComprobacion = this.constructorFormularios.group({
     codigo: ['MARTA5', Validators.required],
     importe: [18.5, [Validators.required, Validators.min(0)]],
-    fecha: [fechaHoyIso(), Validators.required],
     email: ['marta.r@example.com', Validators.email],
   });
   protected readonly resultadoComprobacion = signal<
@@ -71,17 +69,23 @@ export class PaginaSolicitudesCupones {
       return;
     }
     const datosComprobacion = this.formularioComprobacion.getRawValue();
-    const validacion = this.servicioCupones.validar(datosComprobacion.codigo, {
-      subtotal: datosComprobacion.importe,
-      email: datosComprobacion.email,
-      fecha: new Date(datosComprobacion.fecha + 'T12:00'),
-    });
-    const descuentoAplicado = validacion.valido
-      ? { tipo: 'cupon' as const, etiqueta: '', importe: validacion.descuento! }
-      : null;
-    this.resultadoComprobacion.set({
-      ...validacion,
-      total: calcularTotal(datosComprobacion.importe, descuentoAplicado),
-    });
+    // La API valida con la fecha de hoy (RN-06) y devuelve el descuento y el total.
+    this.servicioCupones
+      .validar(datosComprobacion.codigo, datosComprobacion.importe, datosComprobacion.email)
+      .subscribe({
+        next: (validacion) =>
+          this.resultadoComprobacion.set({
+            valido: true,
+            descuento: validacion.descuento,
+            total: validacion.total,
+          }),
+        error: (errorValidacion: Error) =>
+          this.resultadoComprobacion.set({
+            valido: false,
+            motivo: errorValidacion.message,
+            descuento: 0,
+            total: datosComprobacion.importe,
+          }),
+      });
   }
 }

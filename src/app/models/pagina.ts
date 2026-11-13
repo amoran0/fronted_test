@@ -1,6 +1,6 @@
 /**
- * Página de resultados tal como la devuelve Spring Data (`Page<T>`).
- * Los nombres de campo son los del JSON de la API, por eso están en inglés.
+ * Página de resultados para las pantallas. La API la envía anidada
+ * (`{ content, page: { number, size, … } }`, ver `PaginaApi`) y `mapearPagina` la aplana.
  */
 export interface PaginaResultados<T> {
   content: T[];

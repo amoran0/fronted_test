@@ -5,8 +5,8 @@
 
 <div class="indicadores">
   <app-tarjeta-indicador etiqueta="Activos" [valor]="servicioCupones.activos()" />
-  <app-tarjeta-indicador etiqueta="Canjes este mes" [valor]="servicioCupones.canjesMes()" />
-  <app-tarjeta-indicador etiqueta="Descuento concedido" [valor]="formatearEuros(servicioCupones.descuentoConcedido())" />
+  <app-tarjeta-indicador etiqueta="Canjes" [valor]="servicioCupones.canjes()" />
+  <app-tarjeta-indicador etiqueta="Personales" [valor]="servicioCupones.personales()" />
 </div>
 
 <div class="distribucion">
@@ -22,7 +22,7 @@
       <app-aviso [tono]="resultado.tono">{{ resultado.texto }}</app-aviso>
     }
     <ul class="cupones">
-      @for (cupon of cuponesFiltrados(); track cupon.codigo) {
+      @for (cupon of cuponesFiltrados(); track cupon.id) {
         <li class="cupon">
           <div class="expandir">
             <strong>{{ cupon.codigo }}</strong>

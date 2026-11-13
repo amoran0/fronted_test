@@ -8,7 +8,7 @@ import { CabeceraPagina } from '../../components/cabecera-pagina/cabecera-pagina
 import { EtiquetaEstado } from '../../components/etiqueta-estado/etiqueta-estado';
 import { FLUJO_PEDIDO, Pedido } from '../../models/pedido';
 import { ServicioPedidos } from '../../services/servicio-pedidos';
-import { formatearHora, minutosDesde, resumenLineas } from '../../utils/formato';
+import { formatearEuros, formatearHora, minutosDesde, resumenLineas } from '../../utils/formato';
 
 /** Minutos a partir de los cuales un pedido pendiente se marca como "espera alta". */
 const MINUTOS_ESPERA_ALTA = 8;
@@ -26,6 +26,7 @@ export class PaginaColaPedidos {
   protected readonly servicioPedidos = inject(ServicioPedidos);
   protected readonly flujoEstados = FLUJO_PEDIDO;
   protected readonly formatearHora = formatearHora;
+  protected readonly formatearEuros = formatearEuros;
   protected readonly minutosDesde = minutosDesde;
   protected readonly resumenLineas = resumenLineas;
   protected readonly segundosEntreActualizaciones = SEGUNDOS_ENTRE_ACTUALIZACIONES;

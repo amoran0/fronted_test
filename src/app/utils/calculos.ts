@@ -1,7 +1,7 @@
 import { DescuentoAplicado, LineaPedido } from '../models/pedido';
 
-/** Tipo de IVA aplicado a los precios (21 %). */
-export const TIPO_IVA = 0.21;
+/** Tipo de IVA de hostelería incluido en los precios (10 %, RN-05). */
+export const TIPO_IVA = 0.1;
 
 /** Redondea a céntimos evitando errores de coma flotante. */
 export function redondear(valor: number): number {

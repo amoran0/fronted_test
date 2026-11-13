@@ -29,18 +29,23 @@ export interface DescuentoAplicado {
   importe: number;
 }
 
+/** Pedido tal como se muestra en pantalla (se construye a partir de `PedidoApi`). */
 export interface Pedido {
   id: string;
+  clienteId: string;
+  /** Referencia corta para mostrar (primeros caracteres del UUID). */
   codigo: string;
+  /** Turno del día para llamar al cliente, p. ej. «Turno 11» (RN-09). */
   turno: string;
+  numeroTurno: number;
   fecha: string;
-  lineas: { nombre: string; cantidad: number; precioUnitario: number }[];
+  lineas: { productoId: string; nombre: string; cantidad: number; precioUnitario: number }[];
   subtotal: number;
   descuento?: DescuentoAplicado;
   total: number;
+  baseImponible: number;
+  cuotaIva: number;
   estado: EstadoPedido;
-  pagado: boolean;
-  alergiasDeclaradas: string | null;
 }
 
 export const MAX_LINEAS = 15;

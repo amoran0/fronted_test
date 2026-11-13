@@ -1,6 +1,6 @@
-import { PaginaResultados } from '../models/pagina';
-import { Categoria, Producto } from '../models/producto';
+import { GrupoCarta } from '../models/producto';
 import { ParametrosConsulta } from '../services/servicio-api';
+import { categoriasDelGrupo } from './presentacion';
 
 /** Filtros que el cliente puede aplicar en la carta. */
 export interface FiltrosCarta {
@@ -10,69 +10,39 @@ export interface FiltrosCarta {
   /** `disponible`, `agotado` o `todos`. */
   estado: string;
   precioMaximo: number;
+  /** Nombres de los alérgenos que el cliente quiere evitar. */
   alergenosExcluidos: string[];
 }
 
+/** Datos del catálogo necesarios para traducir los filtros de pantalla a ids de la API. */
+export interface CatalogoFiltros {
+  idsCategorias: string[];
+  idAlergenoPorNombre: Map<string, string>;
+}
+
 /**
- * Traduce los filtros y la página a los parámetros de la URL de `GET /productos`.
- * Si los nombres de la API cambian, solo hay que tocarlos aquí.
+ * Traduce los filtros y la página a los parámetros de `GET /productos` de la API:
+ * `nombre`, `categoriaId` (repetido), `disponible`, `precioMaximo`, `sinAlergenoId` (repetido),
+ * `page` (empieza en 0), `size` y `sort`. Si la API cambia un nombre, solo se toca aquí.
  */
 export function parametrosDeFiltrosCarta(
   filtros: FiltrosCarta,
   pagina: number,
   tamanoPagina: number,
+  catalogo: CatalogoFiltros,
 ): ParametrosConsulta {
   return {
     nombre: filtros.texto.trim() || undefined,
-    grupo: filtros.grupo === 'todos' ? undefined : filtros.grupo,
-    estado: filtros.estado === 'todos' ? undefined : filtros.estado,
-    precioMax: filtros.precioMaximo,
-    sinAlergenos: filtros.alergenosExcluidos,
+    categoriaId:
+      filtros.grupo === 'todos'
+        ? undefined
+        : categoriasDelGrupo(filtros.grupo as GrupoCarta, catalogo.idsCategorias),
+    disponible: filtros.estado === 'todos' ? undefined : filtros.estado === 'disponible',
+    precioMaximo: filtros.precioMaximo,
+    sinAlergenoId: filtros.alergenosExcluidos
+      .map((nombre) => catalogo.idAlergenoPorNombre.get(nombre))
+      .filter((id): id is string => !!id),
     page: pagina,
     size: tamanoPagina,
-  };
-}
-
-/** Aplica los filtros de la carta a una lista de productos (lo que hace la API con datos simulados). */
-export function filtrarProductos(
-  productos: Producto[],
-  categorias: Categoria[],
-  filtros: FiltrosCarta,
-): Producto[] {
-  const busqueda = filtros.texto.trim().toLowerCase();
-  const categoriasPorId = new Map(categorias.map((categoria) => [categoria.id, categoria]));
-  return productos.filter((producto) => {
-    const categoria = categoriasPorId.get(producto.categoriaId);
-    const coincideBusqueda =
-      !busqueda ||
-      producto.nombre.toLowerCase().includes(busqueda) ||
-      !!categoria?.nombre.toLowerCase().includes(busqueda);
-    const coincideGrupo = filtros.grupo === 'todos' || categoria?.grupo === filtros.grupo;
-    const coincideEstado = filtros.estado === 'todos' || producto.estado === filtros.estado;
-    const dentroDePrecio = producto.precio <= filtros.precioMaximo;
-    const sinAlergenoExcluido = !filtros.alergenosExcluidos.some((alergeno) =>
-      producto.alergenos.includes(alergeno),
-    );
-    return (
-      coincideBusqueda && coincideGrupo && coincideEstado && dentroDePrecio && sinAlergenoExcluido
-    );
-  });
-}
-
-/** Corta una lista en páginas con el mismo formato que la API. */
-export function paginar<T>(
-  elementos: T[],
-  pagina: number,
-  tamanoPagina: number,
-): PaginaResultados<T> {
-  const totalPages = Math.max(1, Math.ceil(elementos.length / tamanoPagina));
-  const paginaValida = Math.min(Math.max(0, pagina), totalPages - 1);
-  const inicio = paginaValida * tamanoPagina;
-  return {
-    content: elementos.slice(inicio, inicio + tamanoPagina),
-    number: paginaValida,
-    size: tamanoPagina,
-    totalElements: elementos.length,
-    totalPages,
   };
 }

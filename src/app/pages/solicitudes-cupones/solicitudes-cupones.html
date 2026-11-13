@@ -63,10 +63,6 @@
       <input class="entrada" type="number" min="0" step="0.01" formControlName="importe" />
     </label>
     <label class="campo">
-      <span class="t-etiqueta">Fecha</span>
-      <input class="entrada" type="date" formControlName="fecha" />
-    </label>
-    <label class="campo">
       <span class="t-etiqueta">Email</span>
       <input class="entrada" type="email" formControlName="email" />
     </label>
@@ -75,7 +71,7 @@
     @if (resultadoComprobacion(); as resultado) {
       @if (resultado.valido) {
         <app-aviso tono="exito" titulo="Descuento aplicado">
-          Existe · activo · fecha válida · usos disponibles · mínimo alcanzado · email coincide.
+          Existe · activo · vigente hoy · usos disponibles · supera el mínimo · email coincide.
         </app-aviso>
       } @else {
         <app-aviso tono="peligro" titulo="Cupón no válido">{{ resultado.motivo }}</app-aviso>

@@ -95,8 +95,16 @@ export class PaginaGestionCarta {
     });
   }
 
+  /** Resultado de la última operación sobre alérgenos. */
+  protected readonly resultadoAlergeno = signal<ResultadoOperacion | null>(null);
+
   protected crearAlergeno(nombre: string): void {
-    this.servicioProductos.crearAlergeno(nombre);
+    this.servicioProductos.crearAlergeno(nombre).subscribe({
+      next: (alergeno) =>
+        this.resultadoAlergeno.set({ tono: 'exito', texto: `Alérgeno «${alergeno}» creado.` }),
+      error: (errorCreando: Error) =>
+        this.resultadoAlergeno.set({ tono: 'peligro', texto: errorCreando.message }),
+    });
   }
 
   protected productosConAlergeno(alergeno: Alergeno): number {

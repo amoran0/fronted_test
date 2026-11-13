@@ -1,15 +1,16 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Observable, map, tap, throwError } from 'rxjs';
+import { PaginaApi, PedidoApi, PedidoPeticionApi } from '../models/api';
 import { EstadoPedido, FLUJO_PEDIDO, Pedido } from '../models/pedido';
 import { ServicioApi } from './servicio-api';
 import { ServicioAutenticacion } from './servicio-autenticacion';
 import { ServicioCarrito } from './servicio-carrito';
-import { PEDIDOS_SIMULADOS } from './datos-simulados';
-
-type PedidoConCliente = Pedido & { clienteId: string };
+import { estadoPedidoAApi, mapearPedido } from '../utils/mapeadores';
 
 /** Estados de un pedido que todavía no se ha entregado ni cancelado. */
 const ESTADOS_EN_CURSO: EstadoPedido[] = ['pendiente', 'en_preparacion', 'listo'];
+/** Pedidos que se piden por consulta (los más recientes primero). */
+const TAMANO_LISTADO_PEDIDOS = 100;
 
 @Injectable({ providedIn: 'root' })
 export class ServicioPedidos {
@@ -17,14 +18,14 @@ export class ServicioPedidos {
   private readonly autenticacion = inject(ServicioAutenticacion);
   private readonly servicioCarrito = inject(ServicioCarrito);
 
-  private readonly todosLosPedidos = signal<PedidoConCliente[]>([]);
+  private readonly todosLosPedidos = signal<Pedido[]>([]);
   readonly ultimaActualizacion = signal(new Date());
   readonly cargando = signal(true);
   readonly error = signal<string | null>(null);
 
   readonly misPedidos = computed(() =>
     this.todosLosPedidos()
-      .filter((pedido) => pedido.clienteId === this.autenticacion.usuario()?.id)
+      .filter((pedido) => pedido.clienteId === this.autenticacion.usuario()?.clienteId)
       .sort((pedidoA, pedidoB) => pedidoB.fecha.localeCompare(pedidoA.fecha)),
   );
   readonly pedidoActivo = computed(
@@ -55,29 +56,43 @@ export class ServicioPedidos {
   }));
 
   constructor() {
-    this.cargar();
+    // Se recargan los pedidos al iniciar o cerrar sesión (cada rol ve pedidos distintos).
+    effect(() => {
+      this.autenticacion.usuario();
+      untracked(() => this.cargar());
+    });
   }
 
   /**
-   * Pide los pedidos a la API. Con datos simulados, a partir de la segunda carga se devuelven
-   * los pedidos actuales para no perder los cambios hechos en esta sesión.
+   * `GET /pedidos` (paginado). Un cliente pide solo los suyos (`clienteId`); la API
+   * además lo impone con el token. Barista y admin reciben todos.
    */
   cargar(): void {
+    const usuario = this.autenticacion.usuario();
+    if (!usuario) {
+      this.todosLosPedidos.set([]);
+      this.cargando.set(false);
+      return;
+    }
     this.cargando.set(true);
-    const generarPedidosSimulados = () =>
-      this.todosLosPedidos().length ? this.todosLosPedidos() : PEDIDOS_SIMULADOS;
-    this.api.obtener<PedidoConCliente[]>('/pedidos', generarPedidosSimulados).subscribe({
-      next: (pedidosRecibidos) => {
-        this.todosLosPedidos.set(pedidosRecibidos);
-        this.ultimaActualizacion.set(new Date());
-        this.error.set(null);
-        this.cargando.set(false);
-      },
-      error: (errorCarga: Error) => {
-        this.error.set(errorCarga.message);
-        this.cargando.set(false);
-      },
-    });
+    this.api
+      .obtener<PaginaApi<PedidoApi>>('/pedidos', {
+        clienteId: usuario.rol === 'cliente' ? usuario.clienteId : undefined,
+        sort: 'fecha,desc',
+        size: TAMANO_LISTADO_PEDIDOS,
+      })
+      .subscribe({
+        next: (paginaPedidos) => {
+          this.todosLosPedidos.set(paginaPedidos.content.map(mapearPedido));
+          this.ultimaActualizacion.set(new Date());
+          this.error.set(null);
+          this.cargando.set(false);
+        },
+        error: (errorCarga: Error) => {
+          this.error.set(errorCarga.message);
+          this.cargando.set(false);
+        },
+      });
   }
 
   siguienteEstado(estado: EstadoPedido): EstadoPedido | null {
@@ -85,18 +100,15 @@ export class ServicioPedidos {
     return posicion >= 0 && posicion < FLUJO_PEDIDO.length - 1 ? FLUJO_PEDIDO[posicion + 1] : null;
   }
 
+  /** `PATCH /pedidos/{id}/estado`. La API valida las transiciones (RN-08) y responde 422 si no es válida. */
   cambiarEstado(id: string, estado: EstadoPedido): Observable<Pedido> {
     return this.api
-      .modificar<Pedido>(`/pedidos/${id}/estado`, { estado }, () => ({
-        ...this.todosLosPedidos().find((pedido) => pedido.id === id)!,
-        estado,
-      }))
+      .modificar<PedidoApi>(`/pedidos/${id}/estado`, { estado: estadoPedidoAApi(estado) })
       .pipe(
+        map(mapearPedido),
         tap((pedidoActualizado) =>
           this.todosLosPedidos.update((pedidos) =>
-            pedidos.map((pedido) =>
-              pedido.id === id ? { ...pedido, estado: pedidoActualizado.estado } : pedido,
-            ),
+            pedidos.map((pedido) => (pedido.id === id ? pedidoActualizado : pedido)),
           ),
         ),
       );
@@ -113,40 +125,27 @@ export class ServicioPedidos {
     return this.cambiarEstado(id, 'cancelado');
   }
 
-  /** Crea el pedido a partir del carrito con el descuento ya aplicado. */
+  /**
+   * `POST /pedidos` con las líneas del carrito, el cupón y el DNI de socio.
+   * El servidor calcula precios, descuento (RN-07), IVA (RN-05) y turno (RN-09):
+   * el pedido que se guarda y se muestra es el que devuelve la API.
+   */
   confirmar(): Observable<Pedido> {
-    const pedidosExistentes = this.todosLosPedidos();
-    const ultimoNumero = Math.max(
-      0,
-      ...pedidosExistentes.map((pedido) => Number(pedido.codigo.split('-')[1])),
-    );
-    const ultimoTurno = Math.max(
-      0,
-      ...pedidosExistentes
-        .filter((pedido) => pedido.turno.startsWith('A-'))
-        .map((pedido) => Number(pedido.turno.slice(2))),
-    );
-    const pedidoNuevo: PedidoConCliente = {
-      id: 'p-' + (ultimoNumero + 1),
-      codigo: 'CS-' + String(ultimoNumero + 1).padStart(4, '0'),
-      turno: 'A-' + (ultimoTurno + 1),
-      fecha: new Date().toISOString(),
-      clienteId: this.autenticacion.usuario()?.id ?? 'anonimo',
+    const clienteId = this.autenticacion.usuario()?.clienteId;
+    if (!clienteId)
+      return throwError(() => new Error('Inicia sesión como cliente para hacer un pedido.'));
+    const cuerpo: PedidoPeticionApi = {
+      clienteId,
       lineas: this.servicioCarrito.validas().map((linea) => linea.aLineaDePedido()),
-      subtotal: this.servicioCarrito.subtotal(),
-      descuento: this.servicioCarrito.descuento() ?? undefined,
-      total: this.servicioCarrito.total(),
-      estado: 'pendiente',
-      pagado: true,
-      alergiasDeclaradas: null,
+      codigoCupon: this.servicioCarrito.codigoCupon(),
+      dniSocio: this.servicioCarrito.dniSocio(),
     };
-    return this.api
-      .crear<Pedido>('/pedidos', pedidoNuevo, () => pedidoNuevo)
-      .pipe(
-        tap(() => {
-          this.todosLosPedidos.update((pedidos) => [pedidoNuevo, ...pedidos]);
-          this.servicioCarrito.vaciar();
-        }),
-      );
+    return this.api.crear<PedidoApi>('/pedidos', cuerpo).pipe(
+      map(mapearPedido),
+      tap((pedidoCreado) => {
+        this.todosLosPedidos.update((pedidos) => [pedidoCreado, ...pedidos]);
+        this.servicioCarrito.vaciar();
+      }),
+    );
   }
 }

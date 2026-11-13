@@ -6,7 +6,6 @@ import { CabeceraPagina } from '../../components/cabecera-pagina/cabecera-pagina
 import { EtiquetaEstado } from '../../components/etiqueta-estado/etiqueta-estado';
 import { ServicioAutenticacion } from '../../services/servicio-autenticacion';
 import { ServicioCarrito } from '../../services/servicio-carrito';
-import { ServicioCupones } from '../../services/servicio-cupones';
 import { ServicioPedidos } from '../../services/servicio-pedidos';
 import { PipeEuro } from '../../utils/pipe-euro';
 import { formatearDescuento } from '../../utils/formato';
@@ -20,7 +19,6 @@ import { formatearDescuento } from '../../utils/formato';
 })
 export class PaginaConfirmacionPedido {
   protected readonly servicioCarrito = inject(ServicioCarrito);
-  private readonly servicioCupones = inject(ServicioCupones);
   private readonly servicioPedidos = inject(ServicioPedidos);
   private readonly autenticacion = inject(ServicioAutenticacion);
   private readonly enrutador = inject(Router);
@@ -28,7 +26,12 @@ export class PaginaConfirmacionPedido {
   protected readonly formatearDescuento = formatearDescuento;
 
   protected readonly codigoCuponEscrito = signal(this.servicioCarrito.codigoCupon() ?? '');
-  protected readonly errorCupon = signal<string | null>(null);
+  private readonly errorAlAplicarCupon = signal<string | null>(null);
+  /** Error al aplicar el cupón o al revalidarlo cuando cambia el carrito. */
+  protected readonly errorCupon = computed(
+    () => this.errorAlAplicarCupon() ?? this.servicioCarrito.errorCupon(),
+  );
+  protected readonly validandoCupon = signal(false);
   protected readonly dniEscrito = signal(
     this.servicioCarrito.dniSocio() ?? this.autenticacion.usuario()?.dniSocio ?? '',
   );
@@ -41,20 +44,27 @@ export class PaginaConfirmacionPedido {
     () => this.servicioCarrito.descuento()?.tipo === 'socio',
   );
 
+  /** Valida el código en el servidor (`POST /cupones/validar`); el motivo del rechazo lo da la API. */
   protected aplicarCupon(): void {
     const codigo = this.codigoCuponEscrito().trim().toUpperCase();
     if (!codigo) return;
-    const resultado = this.servicioCupones.validar(codigo, {
-      subtotal: this.servicioCarrito.subtotal(),
-      email: this.autenticacion.usuario()?.email,
+    this.validandoCupon.set(true);
+    this.servicioCarrito.aplicarCupon(codigo).subscribe({
+      next: () => {
+        this.errorAlAplicarCupon.set(null);
+        this.validandoCupon.set(false);
+      },
+      error: (errorValidacion: Error) => {
+        this.errorAlAplicarCupon.set(errorValidacion.message);
+        this.validandoCupon.set(false);
+      },
     });
-    this.errorCupon.set(resultado.valido ? null : resultado.motivo!);
-    this.servicioCarrito.codigoCupon.set(resultado.valido ? codigo : null);
   }
 
   protected quitarCupon(): void {
-    this.servicioCarrito.codigoCupon.set(null);
+    this.servicioCarrito.quitarCupon();
     this.codigoCuponEscrito.set('');
+    this.errorAlAplicarCupon.set(null);
   }
 
   protected validarSocio(): void {

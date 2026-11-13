@@ -24,13 +24,14 @@
       <label class="campo">
         <span class="t-etiqueta">Categoría</span>
         <select class="selector" formControlName="categoriaId">
+          <option value="" disabled>Elige una categoría</option>
           @for (categoria of servicioProductos.categorias(); track categoria.id) {
             <option [value]="categoria.id">{{ categoria.nombre }}</option>
           }
         </select>
       </label>
       <label class="campo">
-        <span class="t-etiqueta">Precio · IVA 21 % incluido</span>
+        <span class="t-etiqueta">Precio · IVA 10 % incluido</span>
         <input class="entrada" type="number" step="0.05" min="0" formControlName="precio" [class.es-invalido]="campoInvalido('precio')" />
         @if (campoInvalido('precio')) {
           <span class="error-campo">Introduce un precio entre 0,10 € y 99 €.</span>
@@ -123,7 +124,7 @@
             <span class="t-pequeno atenuado">{{ servicioProductos.nombreCategoria(productoActual.categoriaId) }} · {{ productoActual.alergenos.join(' · ') || 'Sin alérgenos' }}</span>
             <strong>{{ productoActual.precio | euro }}</strong>
           </div>
-          <span class="t-leyenda atenuado">IVA 21 % incluido</span>
+          <span class="t-leyenda atenuado">IVA 10 % incluido</span>
         </div>
 
         @if (productoActual.estado === 'retirado') {

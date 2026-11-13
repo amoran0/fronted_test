@@ -11,7 +11,7 @@ import { Aviso } from '../../components/aviso/aviso';
 import { Icono } from '../../components/icono/icono';
 import { CabeceraPagina } from '../../components/cabecera-pagina/cabecera-pagina';
 import { INICIO_POR_ROL, ServicioAutenticacion } from '../../services/servicio-autenticacion';
-import { esContrasenaSegura } from '../../utils/validaciones';
+import { esContrasenaSegura, esDniValido } from '../../utils/validaciones';
 
 /** Validador de grupo: las dos contraseñas deben coincidir. */
 function contrasenasIguales(grupoFormulario: AbstractControl): ValidationErrors | null {
@@ -37,6 +37,14 @@ export class PaginaRegistro {
     {
       nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(60)]],
       email: ['', [Validators.required, Validators.email]],
+      dni: [
+        '',
+        [
+          Validators.required,
+          (control: AbstractControl) =>
+            control.value && !esDniValido(control.value) ? { dni: true } : null,
+        ],
+      ],
       contrasena: [
         '',
         [
@@ -64,8 +72,8 @@ export class PaginaRegistro {
     }
     this.enviando.set(true);
     this.error.set(null);
-    const { nombre, email, contrasena } = this.formulario.getRawValue();
-    this.autenticacion.registrar({ nombre, email, contrasena }).subscribe({
+    const { nombre, email, dni, contrasena } = this.formulario.getRawValue();
+    this.autenticacion.registrar({ nombre, email, dni, contrasena }).subscribe({
       next: (sesion) => this.enrutador.navigateByUrl(INICIO_POR_ROL[sesion.usuario.rol]),
       error: (errorRegistro: Error) => {
         this.error.set(errorRegistro.message || 'No se ha podido crear la cuenta.');

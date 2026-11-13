@@ -42,11 +42,9 @@
       </span>
       <p>{{ resumenLineas(pedido.lineas) }}</p>
       <div class="fila etiquetas">
-        <app-etiqueta-estado [estado]="pedido.pagado ? 'pagado' : 'pendiente'" [texto]="pedido.pagado ? 'Pagado' : 'Sin pagar'" />
-        @if (pedido.alergiasDeclaradas) {
-          <app-etiqueta-estado tono="advertencia" [texto]="'Alergia: ' + pedido.alergiasDeclaradas" />
-        } @else {
-          <app-etiqueta-estado tono="neutro" texto="Sin alergias declaradas" />
+        <app-etiqueta-estado tono="neutro" [texto]="'Total ' + formatearEuros(pedido.total)" />
+        @if (pedido.descuento; as descuento) {
+          <app-etiqueta-estado tono="informacion" [texto]="descuento.etiqueta" />
         }
       </div>
       <div class="fila acciones">

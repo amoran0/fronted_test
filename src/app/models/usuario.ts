@@ -3,10 +3,12 @@ export type Rol = 'publico' | 'cliente' | 'barista' | 'admin';
 
 export interface Usuario {
   id: string;
+  /** Id del cliente (solo rol cliente): es el que viaja en los pedidos. */
+  clienteId: string | null;
   nombre: string;
   email: string;
   rol: Exclude<Rol, 'publico'>;
-  /** DNI de socio FitZone, si el cliente lo tiene asociado. */
+  /** DNI del cliente: se propone para comprobar si es socio FitZone. */
   dniSocio?: string;
 }
 
@@ -23,4 +25,5 @@ export interface Credenciales {
 /** Datos que se envían para crear una cuenta de cliente. */
 export interface DatosRegistro extends Credenciales {
   nombre: string;
+  dni: string;
 }

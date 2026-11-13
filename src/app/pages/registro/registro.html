@@ -20,6 +20,15 @@
   </label>
 
   <label class="campo">
+    <span class="t-etiqueta">DNI</span>
+    <input class="entrada" type="text" formControlName="dni" autocomplete="off" placeholder="12345678Z"
+      [class.es-invalido]="campoInvalido('dni')" />
+    @if (campoInvalido('dni')) {
+      <span class="error-campo">Introduce un DNI válido (8 números y la letra).</span>
+    }
+  </label>
+
+  <label class="campo">
     <span class="t-etiqueta">Contraseña</span>
     <input class="entrada" type="password" formControlName="contrasena" autocomplete="new-password"
       [class.es-invalido]="campoInvalido('contrasena')" />

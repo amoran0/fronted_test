@@ -5,7 +5,6 @@ import { Aviso } from '../../components/aviso/aviso';
 import { Icono } from '../../components/icono/icono';
 import { CabeceraPagina } from '../../components/cabecera-pagina/cabecera-pagina';
 import { ServicioAutenticacion, INICIO_POR_ROL } from '../../services/servicio-autenticacion';
-import { USUARIOS_SIMULADOS } from '../../services/datos-simulados';
 import { entorno } from '../../../entornos/entorno';
 
 @Component({
@@ -28,9 +27,13 @@ export class PaginaAcceder {
   });
   protected readonly enviando = signal(false);
   protected readonly error = signal<string | null>(null);
-  /** Accesos de demostración: solo con datos de ejemplo. */
-  protected readonly usuariosDemostracion = entorno.usarDatosSimulados ? USUARIOS_SIMULADOS : [];
-  protected readonly etiquetaPorRol = { cliente: 'Cliente', barista: 'Barista', admin: 'Admin' };
+  /** Accesos rápidos con las cuentas del script SQL (solo en desarrollo, ver `entorno`). */
+  protected readonly usuariosDemostracion = entorno.cuentasDemostracion;
+  protected readonly etiquetaPorRol: Record<string, string> = {
+    cliente: 'Cliente',
+    barista: 'Barista',
+    admin: 'Admin',
+  };
 
   protected enviar(): void {
     if (this.formulario.invalid) {

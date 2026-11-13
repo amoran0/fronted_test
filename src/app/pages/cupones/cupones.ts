@@ -51,8 +51,9 @@ export class PaginaCupones {
   protected readonly textoBusqueda = signal('');
   protected readonly mensaje = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
-  /** Código del cupón que se está editando; `null` al crear uno nuevo. */
-  protected readonly codigoEnEdicion = signal<string | null>(null);
+  /** Cupón que se está editando; `null` al crear uno nuevo. */
+  protected readonly cuponEnEdicion = signal<Cupon | null>(null);
+  protected readonly codigoEnEdicion = computed(() => this.cuponEnEdicion()?.codigo ?? null);
 
   protected readonly cuponesFiltrados = computed(() => {
     const busqueda = this.textoBusqueda().trim().toUpperCase();
@@ -104,7 +105,7 @@ export class PaginaCupones {
   protected editarCupon(cupon: Cupon): void {
     this.mensaje.set(null);
     this.error.set(null);
-    this.codigoEnEdicion.set(cupon.codigo);
+    this.cuponEnEdicion.set(cupon);
     this.formulario.reset({
       codigo: cupon.codigo,
       valor: cupon.valor,
@@ -123,7 +124,7 @@ export class PaginaCupones {
   protected empezarCuponNuevo(): void {
     this.mensaje.set(null);
     this.error.set(null);
-    this.codigoEnEdicion.set(null);
+    this.cuponEnEdicion.set(null);
     this.formulario.reset();
     this.irAlFormulario();
   }
@@ -153,27 +154,29 @@ export class PaginaCupones {
     const textoMinimo = valores.minimoCompra
       ? ' · mín. ' + formatearEuros(valores.minimoCompra)
       : '';
+    const cuponEditado = this.cuponEnEdicion();
     const cupon: Cupon = {
+      id: cuponEditado?.id ?? '',
       codigo,
       tipo: valores.tipo,
       valor: valores.valor,
       descripcion: `${textoDescuento} · ${textoDestinatario}${textoMinimo}`,
       desde: valores.desde,
       hasta: valores.hasta || null,
-      usos: this.codigoEnEdicion() ? (this.servicioCupones.buscar(codigo)?.usos ?? 0) : 0,
+      usos: cuponEditado?.usos ?? 0,
       usosMax: valores.usosMax,
       minimoCompra: valores.minimoCompra,
       email: valores.destinatario === 'personal' ? valores.email : undefined,
       activo: valores.activo,
     };
-    const esEdicion = !!this.codigoEnEdicion();
+    const esEdicion = !!cuponEditado;
     (esEdicion
       ? this.servicioCupones.actualizar(cupon)
       : this.servicioCupones.crear(cupon)
     ).subscribe({
       next: () => {
         this.mensaje.set(`Cupón ${codigo} ${esEdicion ? 'actualizado' : 'creado'}.`);
-        this.codigoEnEdicion.set(null);
+        this.cuponEnEdicion.set(null);
         this.formulario.reset();
       },
       error: (errorGuardado: Error) => this.error.set(errorGuardado.message),
@@ -186,9 +189,9 @@ export class PaginaCupones {
   protected eliminarCupon(cupon: Cupon): void {
     if (!confirm(`¿Eliminar el cupón ${cupon.codigo}? Esta acción no se puede deshacer.`)) return;
     this.resultadoEliminacion.set(null);
-    this.servicioCupones.eliminar(cupon.codigo).subscribe({
+    this.servicioCupones.eliminar(cupon.id).subscribe({
       next: () => {
-        if (this.codigoEnEdicion() === cupon.codigo) this.empezarCuponNuevo();
+        if (this.cuponEnEdicion()?.id === cupon.id) this.empezarCuponNuevo();
         this.resultadoEliminacion.set({ tono: 'exito', texto: `Cupón ${cupon.codigo} eliminado.` });
       },
       error: (errorEliminando: Error) =>

@@ -92,6 +92,9 @@
         />
       }
       @case ('alergenos') {
+        @if (resultadoAlergeno(); as resultado) {
+          <app-aviso [tono]="resultado.tono">{{ resultado.texto }}</app-aviso>
+        }
         <app-tarjeta-anadir
           titulo="Alérgenos"
           etiquetaNuevo="Nuevo alérgeno"

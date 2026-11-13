@@ -1,10 +1,11 @@
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Observable, map, tap } from 'rxjs';
 import { MAX_LINEAS } from '../models/pedido';
 import { Producto } from '../models/producto';
 import {
   Descuento,
+  DescuentoImporteFijo,
   DescuentoSocioFitZone,
-  crearDescuentoDeCupon,
   elegirMejorDescuento,
 } from '../models/descuento';
 import { LineaCarrito } from '../models/linea-carrito';
@@ -25,24 +26,18 @@ interface LineaGuardada {
 /** Clave de localStorage donde se guarda el carrito. */
 const CLAVE_CARRITO_GUARDADO = 'tcr.carrito';
 
-/** Carrito de demostración que reproduce el mockup. */
-const CARRITO_DEMO: LineaGuardada[] = [
-  {
-    productoId: 'flat-white',
-    cantidad: 2,
-    opciones: ['Leche de avena', 'Extra caliente'],
-    precioUnitario: 3.2,
-  },
-  { productoId: 'tostada-aguacate', cantidad: 1, opciones: ['Sin cambios'], precioUnitario: 6.9 },
-  {
-    productoId: 'fitzone-proteina',
-    cantidad: 1,
-    opciones: ['Sabor vainilla'],
-    precioUnitario: 5.9,
-  },
-];
+/** Resultado de `POST /cupones/validar` para un subtotal concreto. */
+interface CuponValidado {
+  codigo: string;
+  subtotal: number;
+  descuento: number;
+}
 
-/** Carrito del cliente y descuentos del paso de confirmación. */
+/**
+ * Carrito del cliente y descuentos del paso de confirmación.
+ * Los importes que se ven aquí son una PREVISIÓN: el total definitivo lo calcula
+ * la API al crear el pedido (RN-03, RN-05, RN-07) y es el que se guarda.
+ */
 @Injectable({ providedIn: 'root' })
 export class ServicioCarrito {
   private readonly servicioProductos = inject(ServicioProductos);
@@ -50,7 +45,7 @@ export class ServicioCarrito {
   private readonly autenticacion = inject(ServicioAutenticacion);
 
   private readonly lineasGuardadas = signal(
-    leerJson<LineaGuardada[]>(CLAVE_CARRITO_GUARDADO) ?? CARRITO_DEMO,
+    leerJson<LineaGuardada[]>(CLAVE_CARRITO_GUARDADO) ?? [],
   );
 
   /** Líneas con el producto actualizado (para detectar agotados en tiempo real). */
@@ -74,20 +69,18 @@ export class ServicioCarrito {
     () => this.validas().length > 0 && this.invalidas().length === 0,
   );
 
-  /** Código de cupón aplicado (se revalida si cambia el subtotal). */
+  /** Código de cupón aplicado (se revalida en el servidor si cambia el subtotal). */
   readonly codigoCupon = signal<string | null>(null);
   readonly dniSocio = signal<string | null>(null);
+  /** Motivo por el que el cupón ha dejado de ser válido al cambiar el carrito. */
+  readonly errorCupon = signal<string | null>(null);
+  private readonly cuponValidado = signal<CuponValidado | null>(null);
 
-  /** Descuento del cupón (porcentaje o importe fijo, según el cupón) si sigue siendo válido. */
+  /** Descuento del cupón validado por la API, mientras el subtotal no cambie. */
   readonly descuentoDeCupon = computed<Descuento | null>(() => {
-    const codigo = this.codigoCupon();
-    const cupon = codigo ? this.servicioCupones.buscar(codigo) : undefined;
-    if (!cupon) return null;
-    const { valido } = this.servicioCupones.validar(cupon.codigo, {
-      subtotal: this.subtotal(),
-      email: this.autenticacion.usuario()?.email,
-    });
-    return valido ? crearDescuentoDeCupon(cupon) : null;
+    const validado = this.cuponValidado();
+    if (!validado || validado.subtotal !== this.subtotal()) return null;
+    return new DescuentoImporteFijo(`Cupón ${validado.codigo}`, validado.descuento);
   });
 
   /** Descuento de socio FitZone, si se ha validado un DNI. */
@@ -105,6 +98,44 @@ export class ServicioCarrito {
 
   constructor() {
     effect(() => guardarJson(CLAVE_CARRITO_GUARDADO, this.lineasGuardadas()));
+    // Si cambia el subtotal con un cupón aplicado, se vuelve a validar (p. ej. por el importe mínimo).
+    effect(() => {
+      const subtotal = this.subtotal();
+      untracked(() => {
+        const codigo = this.codigoCupon();
+        if (!codigo || this.cuponValidado()?.subtotal === subtotal || !subtotal) return;
+        this.aplicarCupon(codigo).subscribe({
+          error: (errorCupon: Error) => this.errorCupon.set(errorCupon.message),
+        });
+      });
+    });
+  }
+
+  /**
+   * Valida el código en el servidor (`POST /cupones/validar`) con el subtotal actual.
+   * Si es válido queda aplicado; si no, se quita y el observable emite el motivo.
+   */
+  aplicarCupon(codigo: string): Observable<number> {
+    const codigoNormalizado = codigo.trim().toUpperCase();
+    const subtotal = this.subtotal();
+    return this.servicioCupones
+      .validar(codigoNormalizado, subtotal, this.autenticacion.usuario()?.email)
+      .pipe(
+        tap({
+          next: (validacion) => {
+            this.codigoCupon.set(validacion.codigo);
+            this.cuponValidado.set({ codigo: validacion.codigo, subtotal, descuento: validacion.descuento });
+            this.errorCupon.set(null);
+          },
+          error: () => this.quitarCupon(),
+        }),
+        map((validacion) => validacion.descuento),
+      );
+  }
+
+  quitarCupon(): void {
+    this.codigoCupon.set(null);
+    this.cuponValidado.set(null);
   }
 
   /** Devuelve `false` si se alcanzó el máximo de líneas. */
@@ -152,7 +183,7 @@ export class ServicioCarrito {
 
   vaciar(): void {
     this.lineasGuardadas.set([]);
-    this.codigoCupon.set(null);
+    this.quitarCupon();
     this.dniSocio.set(null);
   }
 }

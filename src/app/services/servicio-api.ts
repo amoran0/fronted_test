@@ -1,7 +1,8 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, defer, delay, of, throwError } from 'rxjs';
+import { Observable, catchError, throwError } from 'rxjs';
 import { entorno } from '../../entornos/entorno';
+import { ProblemaApi } from '../models/api';
 
 /** Valores admitidos como parámetros de la URL (`?clave=valor`). */
 export type ParametrosConsulta = Record<
@@ -10,62 +11,65 @@ export type ParametrosConsulta = Record<
 >;
 
 /**
- * Punto único de acceso a la API REST.
- * Con `entorno.usarDatosSimulados` devuelve el resultado de la función `generarDatosSimulados`
- * con una pequeña latencia; si esa función lanza un error, el observable emite ese error
- * (como haría la API).
+ * Error de la API ya traducido para la interfaz: `message` es el texto para el usuario y
+ * `errores` trae los mensajes por campo de los 400 de validación.
+ */
+export class ErrorApi extends Error {
+  constructor(
+    message: string,
+    readonly estado: number,
+    readonly errores: Record<string, string> = {},
+  ) {
+    super(message);
+  }
+}
+
+/**
+ * Punto único de acceso a la API REST: todas las peticiones salen de aquí con `HttpClient`.
+ * Con `entorno.usarDatosSimulados` las contesta el interceptor de `src/app/simulacion`,
+ * así que este servicio funciona igual con la API real y con la simulada.
  */
 @Injectable({ providedIn: 'root' })
 export class ServicioApi {
   private readonly clienteHttp = inject(HttpClient);
 
   /** GET: consulta un recurso. Los `parametros` viajan en la URL (filtros, paginación…). */
-  obtener<T>(
-    ruta: string,
-    generarDatosSimulados: () => T,
-    parametros?: ParametrosConsulta,
-  ): Observable<T> {
-    return this.pedir('GET', ruta, undefined, generarDatosSimulados, parametros);
+  obtener<T>(ruta: string, parametros?: ParametrosConsulta): Observable<T> {
+    return this.pedir('GET', ruta, undefined, parametros);
   }
 
-  /** POST: crea un recurso. */
-  crear<T>(ruta: string, cuerpo: unknown, generarDatosSimulados: () => T): Observable<T> {
-    return this.pedir('POST', ruta, cuerpo, generarDatosSimulados);
+  /** POST: crea un recurso. El cuerpo viaja en JSON. */
+  crear<T>(ruta: string, cuerpo: unknown): Observable<T> {
+    return this.pedir('POST', ruta, cuerpo);
   }
 
   /** PUT: sustituye un recurso completo. */
-  reemplazar<T>(ruta: string, cuerpo: unknown, generarDatosSimulados: () => T): Observable<T> {
-    return this.pedir('PUT', ruta, cuerpo, generarDatosSimulados);
+  reemplazar<T>(ruta: string, cuerpo: unknown): Observable<T> {
+    return this.pedir('PUT', ruta, cuerpo);
   }
 
   /** PATCH: modifica parte de un recurso. */
-  modificar<T>(ruta: string, cuerpo: unknown, generarDatosSimulados: () => T): Observable<T> {
-    return this.pedir('PATCH', ruta, cuerpo, generarDatosSimulados);
+  modificar<T>(ruta: string, cuerpo: unknown): Observable<T> {
+    return this.pedir('PATCH', ruta, cuerpo);
   }
 
-  /** DELETE: elimina un recurso. */
-  eliminar<T = void>(ruta: string, generarDatosSimulados: () => T): Observable<T> {
-    return this.pedir('DELETE', ruta, undefined, generarDatosSimulados);
+  /** DELETE: elimina un recurso (la API responde 204 sin cuerpo). */
+  eliminar(ruta: string): Observable<void> {
+    return this.pedir<void>('DELETE', ruta);
   }
 
   private pedir<T>(
     metodoHttp: string,
     ruta: string,
-    cuerpo: unknown,
-    generarDatosSimulados: () => T,
+    cuerpo?: unknown,
     parametros?: ParametrosConsulta,
   ): Observable<T> {
-    if (entorno.usarDatosSimulados) {
-      return defer(() => of(structuredClone(generarDatosSimulados()))).pipe(delay(150));
-    }
     return this.clienteHttp
       .request<T>(metodoHttp, entorno.urlApi + ruta, {
         body: cuerpo,
         params: crearParametrosHttp(parametros),
       })
-      .pipe(
-        catchError((errorHttp: unknown) => throwError(() => new Error(mensajeDeError(errorHttp)))),
-      );
+      .pipe(catchError((errorHttp: unknown) => throwError(() => traducirError(errorHttp))));
   }
 }
 
@@ -84,21 +88,33 @@ export function crearParametrosHttp(parametros: ParametrosConsulta = {}): HttpPa
 }
 
 /**
- * Traduce un error HTTP a un texto para el usuario. Usa el mensaje que envía el servidor
- * (`message`, `mensaje` o `error` en el cuerpo) y, si no hay, uno genérico según el código.
+ * Traduce un error HTTP a `ErrorApi`. La API envía siempre un `ProblemDetail`:
+ * `detail` es el mensaje para el usuario (p. ej. el de una regla de negocio en un 422)
+ * y `errores` los mensajes por campo de un 400 de validación.
  */
+export function traducirError(errorHttp: unknown): ErrorApi {
+  if (!(errorHttp instanceof HttpErrorResponse))
+    return new ErrorApi('Ha ocurrido un error inesperado.', 0);
+  const problema = (typeof errorHttp.error === 'object' ? errorHttp.error : null) as
+    Partial<ProblemaApi> | null;
+  const errores = problema?.errores ?? {};
+  const detalleCampos = Object.values(errores).join(' · ');
+  const mensaje =
+    (detalleCampos && problema?.status === 400 ? detalleCampos : problema?.detail) ||
+    mensajePorEstado(errorHttp.status);
+  return new ErrorApi(mensaje, errorHttp.status, errores);
+}
+
+/** Texto para el usuario de cualquier error HTTP. */
 export function mensajeDeError(errorHttp: unknown): string {
-  if (!(errorHttp instanceof HttpErrorResponse)) return 'Ha ocurrido un error inesperado.';
-  const cuerpo = errorHttp.error as
-    { message?: string; mensaje?: string; error?: string } | string | null;
-  const mensajeServidor =
-    typeof cuerpo === 'string' ? cuerpo : (cuerpo?.message ?? cuerpo?.mensaje ?? cuerpo?.error);
-  if (mensajeServidor) return mensajeServidor;
-  if (errorHttp.status === 0) return 'No se puede conectar con el servidor. Comprueba tu conexión.';
-  if (errorHttp.status === 401) return 'Tu sesión ha caducado. Vuelve a iniciar sesión.';
-  if (errorHttp.status === 403) return 'No tienes permiso para realizar esta acción.';
-  if (errorHttp.status === 404) return 'El recurso solicitado no existe.';
-  if (errorHttp.status >= 500)
-    return 'El servidor no ha podido completar la operación. Inténtalo más tarde.';
-  return `Error ${errorHttp.status} al comunicarse con el servidor.`;
+  return traducirError(errorHttp).message;
+}
+
+function mensajePorEstado(estado: number): string {
+  if (estado === 0) return 'No se puede conectar con el servidor. Comprueba tu conexión.';
+  if (estado === 401) return 'Tu sesión ha caducado. Vuelve a iniciar sesión.';
+  if (estado === 403) return 'No tienes permiso para realizar esta acción.';
+  if (estado === 404) return 'El recurso solicitado no existe.';
+  if (estado >= 500) return 'El servidor no ha podido completar la operación. Inténtalo más tarde.';
+  return `Error ${estado} al comunicarse con el servidor.`;
 }
